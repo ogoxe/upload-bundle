@@ -220,7 +220,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
             $imageWidth = $imageHeight = null;
         }
 
-        $uploadedFile = (new UploadedFile())
+        return (new UploadedFile())
             // identifiant unique composé de l'@origin:uploadRelativePath
             // ex: @public:uploads/projet/mon-projet/fichier.jpg
             ->setLiipId($this->getLiipId($uploadRelativePath, $originName))
@@ -236,8 +236,6 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
             ->setUpdatedAt((new \DateTime())->setTimestamp($file->getMTime()))
             ->setIcon($icon)
             ->setPublic($this->isOriginPublic($originName));
-
-        return $uploadedFile;
     }
 
     public function getUploadedFilesFromDirectory($uploadDirectory, $originName = null, $mimeGroup = null, $withDirectoryInfos = false): array
@@ -281,9 +279,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
             $data['directory'] = $this->getUploadedFile($uploadDirectory, $originName);
         }
 
-        $data = $this->addAdditionalInfosToDirectoryFiles($data);
-
-        return $data;
+        return $this->addAdditionalInfosToDirectoryFiles($data);
     }
 
     public function hydrateFileWithAbsolutePath(UploadedFile $uploadedFile): string

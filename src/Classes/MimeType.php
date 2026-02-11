@@ -75,12 +75,8 @@ class MimeType
                     default:
                         return 'text.svg';
                 }
-
-                return 'text-x-script.png';
-                break;
             default:
                 return 'unknown.svg';
-                break;
         }
     }
 }

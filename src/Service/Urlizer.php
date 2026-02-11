@@ -129,7 +129,6 @@ class Urlizer
                 chr(195).chr(180) => 'o',
                 chr(195).chr(181) => 'o',
                 chr(195).chr(182) => 'o',
-                chr(195).chr(182) => 'o',
                 chr(195).chr(185) => 'u',
                 chr(195).chr(186) => 'u',
                 chr(195).chr(187) => 'u',
