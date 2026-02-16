@@ -8,6 +8,9 @@ use Pentatrion\UploadBundle\Exception\InformativeException;
 use Pentatrion\UploadBundle\Service\FileHelper;
 use Pentatrion\UploadBundle\Service\UploadedFileHelperInterface;
 use Pentatrion\UploadBundle\Service\Urlizer;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -21,9 +24,10 @@ use Symfony\Contracts\Service\ServiceSubscriberInterface;
 
 class UploadController extends AbstractController implements ServiceSubscriberInterface
 {
-    public function __construct(private readonly UploadedFileHelperInterface $uploadedFileHelper)
-    {
-    }
+    public function __construct(
+        private readonly UploadedFileHelperInterface $uploadedFileHelper,
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * @throws ExceptionInterface
@@ -97,8 +101,8 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
             throw new InformativeException(401, 'Le nom de fichier n\'est pas valide');
         }
 
-        $extension = strtolower(pathinfo($infos['newFilename'], PATHINFO_EXTENSION));
-        $filenameWithoutExtension = pathinfo($infos['newFilename'], PATHINFO_FILENAME);
+        $extension = strtolower(pathinfo((string) $infos['newFilename'], PATHINFO_EXTENSION));
+        $filenameWithoutExtension = pathinfo((string) $infos['newFilename'], PATHINFO_FILENAME);
 
         $newFilename = Urlizer::urlize($filenameWithoutExtension);
 
@@ -149,13 +153,21 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
         $finalWidth = (float) $request->request->get('finalWidth');
         $finalHeight = (float) $request->request->get('finalHeight');
 
-        $fileHelper->cropImage($uploadRelativePath, $origin, $x, $y, $width, $height, $finalWidth, $finalHeight, $angle);
+        try {
+            $fileHelper->cropImage($uploadRelativePath, $origin, $x, $y, $width, $height, $finalWidth, $finalHeight, $angle);
+        } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
+            $this->logger->error($e->getMessage());
+        }
 
         return $this->json([
             'file' => $normalizer->normalize($this->uploadedFileHelper->getUploadedFile($uploadRelativePath, $origin)),
         ]);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function deleteFile(Request $request, FileHelper $fileHelper): JsonResponse
     {
         $liipIds = $request->request->all()['files'];
@@ -217,9 +229,13 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
         $destRelDir = $request->request->get('directory');
         $origin = $request->request->get('origin');
 
-        $violations = $fileHelper->validateFile($fileFromRequest);
-        if (count($violations) > 0) {
-            throw new InformativeException(415, implode('\n', $violations));
+        try {
+            $violations = $fileHelper->validateFile($fileFromRequest);
+            if (count($violations) > 0) {
+                throw new InformativeException(415, implode('\n', $violations));
+            }
+        } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
+            $this->logger->error($e->getMessage());
         }
 
         $uploadedFile = $fileHelper->uploadFile(
@@ -280,7 +296,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
             $uploadedFile = $fileHelper->createFileFromChunks($tempDir, $filename, $totalSize, $totalChunks, $destRelDir, $origin);
         } catch (InformativeException $err) {
             throw $err;
-        } catch (Exception) {
+        } catch (Exception|NotFoundExceptionInterface|ContainerExceptionInterface) {
             throw new InformativeException(500, "Impossible d'assembler les fragments en fichier");
         }
 

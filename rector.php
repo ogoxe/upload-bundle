@@ -11,4 +11,4 @@ return RectorConfig::configure()
     ])
     // uncomment to reach your current PHP version
     // ->withPhpSets()
-    ->withPhpSets(php80: true);
+    ->withPhpSets(php81: true);

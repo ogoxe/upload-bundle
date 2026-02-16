@@ -15,16 +15,12 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class TextFilePickerType extends AbstractType
 {
-    private string $locale;
-
     public function __construct(
         private readonly FileManagerHelperInterface $fileManagerHelper,
         private readonly UploadedFileHelperInterface $uploadedFileHelper,
         RequestStack $requestStack,
         private readonly NormalizerInterface $normalizer
-    ) {
-        $this->locale = $requestStack->getCurrentRequest()->getLocale();
-    }
+    ) {}
 
     /**
      * @throws ExceptionInterface
@@ -33,11 +29,11 @@ class TextFilePickerType extends AbstractType
     {
         $value = $form->getData();
 
-        $fileManagerConfig = $this->fileManagerHelper->completeConfig($options['fileManagerConfig'], $this->locale);
+        $fileManagerConfig = $this->fileManagerHelper->completeConfig($options['fileManagerConfig']);
 
         $uploadedFiles = [];
         if (!empty($value)) {
-            $values = explode(',', $value);
+            $values = explode(',', (string) $value);
             foreach ($values as $fileRelativePath) {
                 $uploadedFiles[] = $this->uploadedFileHelper->getUploadedFile(
                     $fileRelativePath,

@@ -2,6 +2,7 @@
 
 namespace Pentatrion\UploadBundle\Twig;
 
+use Exception;
 use Pentatrion\UploadBundle\Entity\UploadedFile;
 use Pentatrion\UploadBundle\Service\UploadedFileHelperInterface;
 use Twig\Extension\AbstractExtension;
@@ -9,7 +10,7 @@ use Twig\TwigFunction;
 
 class AssetExtension extends AbstractExtension
 {
-    public function __construct(private UploadedFileHelperInterface $uploadedFileHelper)
+    public function __construct(private readonly UploadedFileHelperInterface $uploadedFileHelper)
     {
     }
 
@@ -17,8 +18,8 @@ class AssetExtension extends AbstractExtension
     {
         return [
             new TwigFunction('uploaded_file_liip_id', [$this, 'getUploadedFileLiipId']),
-            new TwigFunction('uploaded_file_web_path', [$this, 'getUploadedFileWebPath']),
-            new TwigFunction('uploaded_image_filtered', [$this, 'getUploadedImageFiltered']),
+            new TwigFunction('uploaded_file_web_path', $this->getUploadedFileWebPath(...)),
+            new TwigFunction('uploaded_image_filtered', $this->getUploadedImageFiltered(...)),
         ];
     }
 
@@ -53,7 +54,7 @@ class AssetExtension extends AbstractExtension
             try {
                 $liipPath = $this->uploadedFileHelper->getLiipPath($uploadRelativePath, $originName);
                 return $this->uploadedFileHelper->getUrlThumbnail($liipPath, $filter, [], $timestamp);
-            } catch (\Exception) {
+            } catch (Exception) {
                 return $this->uploadedFileHelper->getWebPath($uploadRelativePath, $originName);
             }
         }

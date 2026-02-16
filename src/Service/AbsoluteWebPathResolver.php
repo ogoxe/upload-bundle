@@ -11,12 +11,8 @@
 
 namespace Pentatrion\UploadBundle\Service;
 
-use Liip\ImagineBundle\Binary\BinaryInterface;
-use Liip\ImagineBundle\Imagine\Cache\Helper\PathHelper;
 use Liip\ImagineBundle\Imagine\Cache\Resolver\ResolverInterface;
 use Liip\ImagineBundle\Imagine\Cache\Resolver\WebPathResolver;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Routing\RequestContext;
 
 class AbsoluteWebPathResolver extends WebPathResolver implements ResolverInterface
 {
@@ -31,12 +27,12 @@ class AbsoluteWebPathResolver extends WebPathResolver implements ResolverInterfa
         );
     }
 
-    public function getFilePath($path, $filter)
+    public function getFilePath($path, $filter): string
     {
         return $this->webRoot . '/' . $this->getFullPath($path, $filter);
     }
 
-    private function getFullPath($path, $filter)
+    private function getFullPath($path, $filter): string
     {
         // crude way of sanitizing URL scheme ("protocol") part
         $path = str_replace('://', '---', $path);

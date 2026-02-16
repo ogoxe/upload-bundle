@@ -26,8 +26,8 @@ class PentatrionUploadExtension extends Extension
         $origins = [];
 
         foreach ($config['origins'] as $key => $origin) {
-            if (str_starts_with($origin['path'], $webRoot)) {
-                $origin['web_prefix'] = substr($origin['path'], strlen($webRoot));
+            if (str_starts_with((string) $origin['path'], $webRoot)) {
+                $origin['web_prefix'] = substr((string) $origin['path'], strlen($webRoot));
             }
             $origins[$key] = $origin;
         }

@@ -26,7 +26,7 @@ use function fwrite;
 class FileHelper implements ServiceSubscriberInterface
 {
     private mixed $publicUploadsOrigin;
-    private string $liipCacheDir;
+    private readonly string $liipCacheDir;
 
     public function __construct(
         mixed $uploadOrigins,
@@ -63,10 +63,10 @@ class FileHelper implements ServiceSubscriberInterface
         if (isset($options['extension']) && $options['extension']) {
             $extension = $options['extension'];
         } else {
-            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $extension = strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION));
         }
 
-        $filenameWithoutExtension = pathinfo($filename, PATHINFO_FILENAME);
+        $filenameWithoutExtension = pathinfo((string) $filename, PATHINFO_FILENAME);
 
         if (isset($options['urlize']) && $options['urlize']) {
             $filenameWithoutExtension = Urlizer::urlize($filenameWithoutExtension);

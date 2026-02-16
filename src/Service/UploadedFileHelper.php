@@ -95,7 +95,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
 
         $uploadRelativePath = substr(
             $file->getPathname(),
-            strlen($this->origins[$originName]['path']) + 1,
+            strlen((string) $this->origins[$originName]['path']) + 1,
         );
 
         return $this->origins[$originName]['liip_path'].'/'.$uploadRelativePath;
@@ -118,7 +118,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
 
     public function parseLiipId($liipId): array
     {
-        $str = substr($liipId, 1);
+        $str = substr((string) $liipId, 1);
         $firstColon = strpos($str, ':');
         $origin = substr($str, 0, $firstColon);
         $uploadRelativePath = substr($str, $firstColon + 1);
@@ -207,11 +207,11 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
 
         $file = new SplFileInfo($absolutePath);
 
-        $lastSlash = strrpos($uploadRelativePath, '/');
+        $lastSlash = strrpos((string) $uploadRelativePath, '/');
         if (false === $lastSlash) {
             $directory = '';
         } else {
-            $directory = substr($uploadRelativePath, 0, $lastSlash);
+            $directory = substr((string) $uploadRelativePath, 0, $lastSlash);
         }
 
         if ($file->isDir()) {
@@ -219,7 +219,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
             $icon = 'folder.svg';
         } else {
             $mimeType = MimeTypes::getDefault()->guessMimeType($file->getPathname());
-            $mimeGroup = explode('/', $mimeType)[0];
+            $mimeGroup = explode('/', (string) $mimeType)[0];
             $icon = MimeType::getIconByMimeType($mimeType);
         }
 

@@ -14,15 +14,11 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class EntitiesFilePickerType extends AbstractType
 {
-    private string $locale;
-
     public function __construct(
         private readonly FileManagerHelperInterface $fileManagerHelper,
         RequestStack $requestStack,
         private readonly NormalizerInterface $normalizer
-    ) {
-        $this->locale = substr($requestStack->getCurrentRequest()->getLocale(), 0, 2);
-    }
+    ) {}
 
     /**
      * @throws ExceptionInterface
@@ -31,7 +27,7 @@ class EntitiesFilePickerType extends AbstractType
     {
         $value = $form->getData();
 
-        $fileManagerConfig = $this->fileManagerHelper->completeConfig($options['fileManagerConfig'], $this->locale);
+        $fileManagerConfig = $this->fileManagerHelper->completeConfig($options['fileManagerConfig']);
         $fileManagerConfig['multiple'] = true;
 
         $view->vars['attr']['data-name'] = $view->vars['full_name'];

@@ -6,7 +6,7 @@ class MimeType
 {
     public static function getIconByMimeType($mimeType): string
     {
-        $mimeTypeExploded = explode('/', $mimeType);
+        $mimeTypeExploded = explode('/', (string) $mimeType);
 
         return match ($mimeTypeExploded[0]) {
             'image' => match ($mimeTypeExploded[1]) {
