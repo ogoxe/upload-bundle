@@ -11,5 +11,4 @@ return RectorConfig::configure()
     ])
     // uncomment to reach your current PHP version
     // ->withPhpSets()
-    ->withSets([SetList::DEAD_CODE]);
-//    ->withTypeCoverageLevel(0);
+    ->withPhpSets(php80: true);

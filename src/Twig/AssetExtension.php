@@ -9,11 +9,8 @@ use Twig\TwigFunction;
 
 class AssetExtension extends AbstractExtension
 {
-    private $uploadedFileHelper;
-
-    public function __construct(UploadedFileHelperInterface $uploadedFileHelper)
+    public function __construct(private UploadedFileHelperInterface $uploadedFileHelper)
     {
-        $this->uploadedFileHelper = $uploadedFileHelper;
     }
 
     public function getFunctions(): array
@@ -56,7 +53,7 @@ class AssetExtension extends AbstractExtension
             try {
                 $liipPath = $this->uploadedFileHelper->getLiipPath($uploadRelativePath, $originName);
                 return $this->uploadedFileHelper->getUrlThumbnail($liipPath, $filter, [], $timestamp);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 return $this->uploadedFileHelper->getWebPath($uploadRelativePath, $originName);
             }
         }

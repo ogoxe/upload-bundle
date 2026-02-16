@@ -8,75 +8,39 @@ class MimeType
     {
         $mimeTypeExploded = explode('/', $mimeType);
 
-        switch ($mimeTypeExploded[0]) {
-            case 'image':
-                switch ($mimeTypeExploded[1]) {
-                    case 'jpeg':
-                        return 'image-jpg.svg';
-                    case 'png':
-                        return 'image-png.svg';
-                    case 'webp':
-                        return 'image-webp.svg';
-                    case 'svg+xml':
-                    case 'svg':
-                        return 'image-svg+xml.svg';
-                    case 'vnd.adobe.photoshop':
-                        return 'application-photoshop.svg';
-                    case 'x-xcf':
-                        return 'image-x-compressed-xcf.svg';
-                    default:
-                        return 'image.svg';
-                }
-                // no break
-            case 'video':
-                return 'video-x-generic.svg';
-            case 'audio':
-                return 'application-ogg.svg';
-                // erreur import font
-            case 'font':
-                return 'application-pgp-signature.svg';
-            case 'application':
-                switch ($mimeTypeExploded[1]) {
-                    case 'pdf':
-                        return 'application-pdf.svg';
-                    case 'illustrator':
-                        return 'application-illustrator.svg';
-                    case 'json':
-                        return 'application-json.svg';
-                    case 'vnd.oasis.opendocument.spreadsheet':
-                        return 'libreoffice-oasis-spreadsheet.svg';
-                    case 'vnd.oasis.opendocument.text':
-                        return 'libreoffice-oasis-master-document.svg';
-                    case 'vnd.openxmlformats-officedocument.wordprocessingml.document':
-                    case 'msword':
-                        return 'application-msword-template.svg';
-                    case 'vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                    case 'vnd.ms-excel':
-                        return 'application-vnd.ms-excel.svg';
-                    case 'zip':
-                        return 'application-x-archive.svg';
-                    default:
-                        return 'application-vnd.appimage.svg';
-                }
-                // no break
-            case 'text':
-                switch ($mimeTypeExploded[1]) {
-                    case 'x-php':
-                        return 'text-x-php.svg';
-                    case 'x-java':
-                        return 'text-x-javascript.svg';
-                    case 'css':
-                        return 'text-css.svg';
-                    case 'html':
-                        return 'text-html.svg';
-                    case 'xml':
-                        return 'text-xml.svg';
-
-                    default:
-                        return 'text.svg';
-                }
-            default:
-                return 'unknown.svg';
-        }
+        return match ($mimeTypeExploded[0]) {
+            'image' => match ($mimeTypeExploded[1]) {
+                'jpeg' => 'image-jpg.svg',
+                'png' => 'image-png.svg',
+                'webp' => 'image-webp.svg',
+                'svg+xml', 'svg' => 'image-svg+xml.svg',
+                'vnd.adobe.photoshop' => 'application-photoshop.svg',
+                'x-xcf' => 'image-x-compressed-xcf.svg',
+                default => 'image.svg',
+            },
+            'video' => 'video-x-generic.svg',
+            'audio' => 'application-ogg.svg',
+            'font' => 'application-pgp-signature.svg',
+            'application' => match ($mimeTypeExploded[1]) {
+                'pdf' => 'application-pdf.svg',
+                'illustrator' => 'application-illustrator.svg',
+                'json' => 'application-json.svg',
+                'vnd.oasis.opendocument.spreadsheet' => 'libreoffice-oasis-spreadsheet.svg',
+                'vnd.oasis.opendocument.text' => 'libreoffice-oasis-master-document.svg',
+                'vnd.openxmlformats-officedocument.wordprocessingml.document', 'msword' => 'application-msword-template.svg',
+                'vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'vnd.ms-excel' => 'application-vnd.ms-excel.svg',
+                'zip' => 'application-x-archive.svg',
+                default => 'application-vnd.appimage.svg',
+            },
+            'text' => match ($mimeTypeExploded[1]) {
+                'x-php' => 'text-x-php.svg',
+                'x-java' => 'text-x-javascript.svg',
+                'css' => 'text-css.svg',
+                'html' => 'text-html.svg',
+                'xml' => 'text-xml.svg',
+                default => 'text.svg',
+            },
+            default => 'unknown.svg',
+        };
     }
 }

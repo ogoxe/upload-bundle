@@ -32,7 +32,7 @@ class Urlizer
      *
      * @return bool
      */
-    public static function seemsUtf8($string)
+    public static function seemsUtf8(string $string): bool
     {
         $stringLength = strlen($string);
 
@@ -66,20 +66,20 @@ class Urlizer
     /**
      * Replaces accentuated chars (and a few others) with their ASCII base char.
      *
-     * @see Transliterator::utf8ToAscii for a full transliteration to ASCII
-     *
      * @param string $string String to unaccent
      *
      * @return string Unaccented string
+     *@see Transliterator::utf8ToAscii for a full transliteration to ASCII
+     *
      */
-    public static function unaccent($string)
+    public static function unaccent(string $string): string
     {
         if (!preg_match('/[\x80-\xff]/', $string)) {
             return $string;
         }
 
         if (self::seemsUtf8($string)) {
-            $chars = array(
+            $chars = [
                 // Decompositions for Latin-1 Supplement
                 chr(195).chr(128) => 'A',
                 chr(195).chr(129) => 'A',
@@ -282,11 +282,11 @@ class Urlizer
                 'æ' => 'a',
                 'ø' => 'o',
                 'å' => 'aa',
-            );
+            ];
 
             $string = strtr($string, $chars);
         } else {
-            $chars = array();
+            $chars = [];
             // Assume ISO-8859-1 if not UTF-8
             $chars['in'] = chr(128).chr(131).chr(138).chr(142).chr(154).chr(158)
                 .chr(159).chr(162).chr(165).chr(181).chr(192).chr(193).chr(194)
@@ -303,19 +303,9 @@ class Urlizer
 
             $string = strtr($string, $chars['in'], $chars['out']);
 
-            $doubleChars = array();
-            $doubleChars['in'] = array(
-                chr(140),
-                chr(156),
-                chr(198),
-                chr(208),
-                chr(222),
-                chr(223),
-                chr(230),
-                chr(240),
-                chr(254),
-            );
-            $doubleChars['out'] = array('OE', 'oe', 'AE', 'DH', 'TH', 'ss', 'ae', 'dh', 'th');
+            $doubleChars = [];
+            $doubleChars['in'] = [chr(140), chr(156), chr(198), chr(208), chr(222), chr(223), chr(230), chr(240), chr(254)];
+            $doubleChars['out'] = ['OE', 'oe', 'AE', 'DH', 'TH', 'ss', 'ae', 'dh', 'th'];
             $string = str_replace($doubleChars['in'], $doubleChars['out'], $string);
         }
 
@@ -323,11 +313,11 @@ class Urlizer
     }
 
     /**
-     * Transliterates an UTF-8 string to ASCII.
+     * Transliterates a UTF-8 string to ASCII.
      *
      * US-ASCII transliterations of Unicode text
      * Ported Sean M. Burke's Text::Unidecode Perl module (He did all the hard work!)
-     * Warning: you should only pass this well formed UTF-8!
+     * Warning: you should only pass this well-formed UTF-8!
      * Be aware it works by making a copy of the input string which it appends transliterated
      * characters to - it uses a PHP output buffer to do this - it means, memory use will increase,
      * requiring up to the same amount again as the input string.
@@ -341,7 +331,7 @@ class Urlizer
      *
      * @return string US-ASCII string
      */
-    public static function utf8ToAscii($str, $unknown = '?')
+    public static function utf8ToAscii(string $str, string $unknown = '?'): string
     {
         static $UTF8_TO_ASCII;
 
@@ -349,11 +339,11 @@ class Urlizer
             return '';
         }
 
-        preg_match_all('/.{1}|[^\x00]{1,1}$/us', $str, $ar);
+        preg_match_all('/.|[^\x00]$/us', $str, $ar);
         $chars = $ar[0];
 
         foreach ($chars as $i => $c) {
-            if (ord($c[0]) >= 0 && ord($c[0]) <= 127) {
+            if (ord($c[0]) <= 127) {
                 continue;
             } // ASCII - next please
             if (ord($c[0]) >= 192 && ord($c[0]) <= 223) {
@@ -371,7 +361,7 @@ class Urlizer
             if (ord($c[0]) >= 252 && ord($c[0]) <= 253) {
                 $ord = (ord($c[0]) - 252) * 1073741824 + (ord($c[1]) - 128) * 16777216 + (ord($c[2]) - 128) * 262144 + (ord($c[3]) - 128) * 4096 + (ord($c[4]) - 128) * 64 + (ord($c[5]) - 128);
             }
-            if (ord($c[0]) >= 254 && ord($c[0]) <= 255) {
+            if (ord($c[0]) >= 254) {
                 $chars[$i] = $unknown;
                 continue;
             } //error
@@ -383,13 +373,13 @@ class Urlizer
                 if (file_exists($bankfile)) {
                     include $bankfile;
                 } else {
-                    $UTF8_TO_ASCII[$bank] = array();
+                    $UTF8_TO_ASCII[$bank] = [];
                 }
             }
 
-            $newchar = $ord & 255;
-            if (array_key_exists($newchar, $UTF8_TO_ASCII[$bank])) {
-                $chars[$i] = $UTF8_TO_ASCII[$bank][$newchar];
+            $newChar = $ord & 255;
+            if (array_key_exists($newChar, $UTF8_TO_ASCII[$bank])) {
+                $chars[$i] = $UTF8_TO_ASCII[$bank][$newChar];
             } else {
                 $chars[$i] = $unknown;
             }
@@ -403,14 +393,14 @@ class Urlizer
      *
      * Does not transliterate correctly eastern languages.
      *
-     * @see Transliterator::unaccent for the transliteration logic
-     *
      * @param string $text
      * @param string $separator
      *
      * @return string
+     * @see Transliterator::unaccent for the transliteration logic
+     *
      */
-    public static function urlize($text, $separator = '-')
+    public static function urlize(string $text, string $separator = '-'): string
     {
         $text = self::unaccent($text);
 
@@ -427,7 +417,7 @@ class Urlizer
      *
      * @return string $text
      */
-    public static function transliterate($text, $separator = '-')
+    public static function transliterate(string $text, string $separator = '-'): string
     {
         if (preg_match('/[\x80-\xff]/', $text) && self::validUtf8($text)) {
             $text = self::utf8ToAscii($text);
@@ -442,15 +432,15 @@ class Urlizer
      *
      * Note: this function has been modified to simple return true or false
      *
-     * @author <hsivonen@iki.fi>
-     *
      * @param string $str UTF-8 encoded string
      *
      * @return bool
      *
+     * @author <hsivonen@iki.fi>
+     *
      * @see    http://hsivonen.iki.fi/php-utf8/
      */
-    public static function validUtf8($str)
+    public static function validUtf8(string $str): bool
     {
         $mState = 0; // cached expected number of octets after the current octet
         // until the beginning of the next UTF8 character sequence
@@ -564,7 +554,7 @@ class Urlizer
      *
      * @return string
      */
-    private static function postProcessText($text, $separator)
+    private static function postProcessText(string $text, string $separator): string
     {
         if (function_exists('mb_strtolower')) {
             $text = mb_strtolower($text);

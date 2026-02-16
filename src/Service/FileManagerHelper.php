@@ -4,25 +4,22 @@ namespace Pentatrion\UploadBundle\Service;
 
 class FileManagerHelper implements FileManagerHelperInterface
 {
-    protected $origins;
-
-    public function __construct($uploadOrigins)
+    public function __construct(protected $origins)
     {
-        $this->origins = $uploadOrigins;
     }
 
     public function completeEntryPoints($entryPoints = []): array
     {
         $completeEntryPoints = [];
         foreach ($entryPoints as $entryPoint) {
-            $originName = isset($entryPoint['origin']) ? $entryPoint['origin'] : 'public';
+            $originName = $entryPoint['origin'] ?? 'public';
             $completeEntryPoints[] = array_merge([
                 'directory' => '',
                 'origin' => $originName,
                 'readOnly' => false,
                 'icon' => 'famfm-folder',
                 'label' => 'Répertoire principal',
-                'webPrefix' => isset($this->origins[$originName]['web_prefix']) ? $this->origins[$originName]['web_prefix'] : null,
+                'webPrefix' => $this->origins[$originName]['web_prefix'] ?? null,
             ], $entryPoint);
         }
 

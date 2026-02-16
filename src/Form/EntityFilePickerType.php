@@ -10,30 +10,25 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class EntityFilePickerType extends AbstractType
 {
-    private $fileManagerHelper;
-    private $locale;
-    private $normalizer;
+    private string $locale;
 
     public function __construct(
-        FileManagerHelperInterface $fileManagerHelper,
+        private readonly FileManagerHelperInterface $fileManagerHelper,
         RequestStack $requestStack,
-        NormalizerInterface $normalizer
+        private readonly NormalizerInterface $normalizer
     ) {
-        $this->fileManagerHelper = $fileManagerHelper;
         $this->locale = substr($requestStack->getCurrentRequest()->getLocale(), 0, 2);
-        $this->normalizer = $normalizer;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addModelTransformer(new CallbackTransformer(
-            function ($uploadedFile) {
-                return $uploadedFile;
-            },
+            fn($uploadedFile) => $uploadedFile,
             function ($uploadedFile) {
                 if (!$uploadedFile || $uploadedFile->isEmpty()) {
                     return null;
@@ -44,7 +39,10 @@ class EntityFilePickerType extends AbstractType
         ));
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    /**
+     * @throws ExceptionInterface
+     */
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $value = $form->getData();
         $fileManagerConfig = $this->fileManagerHelper->completeConfig($options['fileManagerConfig'], $this->locale);
