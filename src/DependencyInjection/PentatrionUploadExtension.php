@@ -3,6 +3,7 @@
 namespace Pentatrion\UploadBundle\DependencyInjection;
 
 use Exception;
+use Override;
 use Pentatrion\UploadBundle\Service\FileManagerHelperInterface;
 use Pentatrion\UploadBundle\Service\UploadedFileHelperInterface;
 use Symfony\Component\Config\FileLocator;
@@ -15,6 +16,7 @@ class PentatrionUploadExtension extends Extension
     /**
      * @throws Exception
      */
+    #[Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));

@@ -13,20 +13,23 @@ namespace Pentatrion\UploadBundle\Service;
 
 use Liip\ImagineBundle\Imagine\Cache\Resolver\ResolverInterface;
 use Liip\ImagineBundle\Imagine\Cache\Resolver\WebPathResolver;
+use Override;
 
 class AbsoluteWebPathResolver extends WebPathResolver implements ResolverInterface
 {
     /**
      * {@inheritdoc}
      */
+    #[Override]
     public function resolve($path, $filter): string
     {
         return sprintf(
             '/%s',
-            ltrim($this->getFileUrl($path, $filter), '/')
+            ltrim((string) $this->getFileUrl($path, $filter), '/')
         );
     }
 
+    #[Override]
     public function getFilePath($path, $filter): string
     {
         return $this->webRoot . '/' . $this->getFullPath($path, $filter);

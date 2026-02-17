@@ -2,6 +2,8 @@
 
 namespace Pentatrion\UploadBundle\Service;
 
+use Override;
+
 class FileManagerHelper implements FileManagerHelperInterface
 {
     public function __construct(protected $origins)
@@ -26,6 +28,7 @@ class FileManagerHelper implements FileManagerHelperInterface
         return $completeEntryPoints;
     }
 
+    #[Override]
     public function completeConfig($baseConfig = []): array
     {
         $completeEntryPoints = $this->completeEntryPoints($baseConfig['entryPoints']);

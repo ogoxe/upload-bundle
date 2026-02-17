@@ -2,6 +2,7 @@
 
 namespace Pentatrion\UploadBundle\EventSubscriber;
 
+use Override;
 use Pentatrion\UploadBundle\Exception\InformativeException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -30,6 +31,7 @@ readonly class ExceptionSubscriber implements EventSubscriberInterface
         $event->setResponse($response);
     }
 
+    #[Override]
     public static function getSubscribedEvents(): array
     {
         return [

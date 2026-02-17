@@ -2,6 +2,7 @@
 
 namespace Pentatrion\UploadBundle\Form;
 
+use Override;
 use Pentatrion\UploadBundle\Entity\UploadedFile;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\DataTransformer\DateTimeToStringTransformer;
@@ -11,6 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class UploadedFileType extends AbstractType
 {
+    #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -57,6 +59,7 @@ class UploadedFileType extends AbstractType
         $builder->get('updatedAt')->addModelTransformer(new DateTimeToStringTransformer(null, null, 'Y-m-d\TH:i:sT'));
     }
 
+    #[Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

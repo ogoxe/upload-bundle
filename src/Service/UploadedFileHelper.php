@@ -7,6 +7,7 @@ use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Liip\ImagineBundle\Imagine\Data\DataManager;
 use Liip\ImagineBundle\Imagine\Filter\FilterManager;
 use LogicException;
+use Override;
 use Pentatrion\UploadBundle\Classes\MimeType;
 use Pentatrion\UploadBundle\Entity\UploadedFile;
 use Pentatrion\UploadBundle\Exception\InformativeException;
@@ -29,6 +30,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     // futur, c'est nécessaire de prégénérer la miniature
     protected static array $filtersToPregenerate = [];
 
+    #[Override]
     public static function getSubscribedServices(): array
     {
         return [
@@ -50,6 +52,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         return isset($this->origins[$originName]['web_prefix']);
     }
 
+    #[Override]
     public function getAbsolutePath($uploadRelativePath = '', $originName = null): string
     {
         if ($uploadRelativePath instanceof UploadedFile) {
@@ -74,6 +77,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
+    #[Override]
     public function getWebPath($uploadRelativePath, $originName = null): string
     {
         $originName ??= $this->defaultOriginName;
@@ -89,6 +93,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         return $this->origins[$originName]['web_prefix'].'/'.$uploadRelativePath;
     }
 
+    #[Override]
     public function getLiipPathFromFile(SplFileInfo $file, $originName = null): string
     {
         $originName ??= $this->defaultOriginName;
@@ -101,6 +106,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         return $this->origins[$originName]['liip_path'].'/'.$uploadRelativePath;
     }
 
+    #[Override]
     public function getLiipPath($uploadRelativePath, $originName = null): string
     {
         $originName ??= $this->defaultOriginName;
@@ -109,6 +115,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     }
 
     // renvoie un identifiant pour liipImagine.
+    #[Override]
     public function getLiipId($uploadRelativePath, $originName = null): string
     {
         $originName ??= $this->defaultOriginName;
@@ -116,6 +123,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         return "@$originName:$uploadRelativePath";
     }
 
+    #[Override]
     public function parseLiipId($liipId): array
     {
         $str = substr((string) $liipId, 1);
@@ -131,6 +139,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
      *
      * à partir d'un webPath retrouve l'url de son miniature
      */
+    #[Override]
     public function getUrlThumbnail($liipPath, $filter, array $runtimeConfig = [], $suffix = null): ?string
     {
         if (!$this->container->has('cache.manager')) {
@@ -182,6 +191,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         }
     }
 
+    #[Override]
     public function getUploadedFileByLiipId($liipId): UploadedFile
     {
         [$uploadRelativePath, $origin] = $this->parseLiipId($liipId);
@@ -189,6 +199,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         return $this->getUploadedFile($uploadRelativePath, $origin);
     }
 
+    #[Override]
     public function addAbsolutePath(UploadedFile $uploadedFile): UploadedFile
     {
         $uploadedFile->setAbsolutePath(
@@ -198,6 +209,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         return $uploadedFile;
     }
 
+    #[Override]
     public function getUploadedFile($uploadRelativePath, $originName = null): ?UploadedFile
     {
         $absolutePath = $this->getAbsolutePath($uploadRelativePath, $originName);
@@ -247,6 +259,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
             ->setPublic($this->isOriginPublic($originName));
     }
 
+    #[Override]
     public function getUploadedFilesFromDirectory($uploadDirectory, $originName = null, $mimeGroup = null, $withDirectoryInfos = false): array
     {
         $finder = (new Finder())->sortByType()->depth('== 0');
@@ -291,6 +304,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         return $this->addAdditionalInfosToDirectoryFiles($data);
     }
 
+    #[Override]
     public function hydrateFileWithAbsolutePath(UploadedFile $uploadedFile): string
     {
         $absolutePath = $this->getAbsolutePath($uploadedFile->getUploadRelativePath(), $uploadedFile->getOrigin());
@@ -299,6 +313,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         return $absolutePath;
     }
 
+    #[Override]
     public function eraseSensibleInformations(UploadedFile $uploadedFile): UploadedFile
     {
         $uploadedFile->setAbsolutePath(null);
@@ -315,16 +330,19 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         return $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'];
     }
 
+    #[Override]
     public function addAdditionalInfosToDirectoryFiles(&$data): array
     {
         return $data;
     }
 
+    #[Override]
     public function addAdditionalInfos(&$infos): array
     {
         return $infos;
     }
 
+    #[Override]
     public static function hasGrantedAccess(UploadedFile $uploadedFile, $user): bool
     {
         return true;

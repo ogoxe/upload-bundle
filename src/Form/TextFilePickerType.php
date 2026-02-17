@@ -2,6 +2,7 @@
 
 namespace Pentatrion\UploadBundle\Form;
 
+use Override;
 use Pentatrion\UploadBundle\Service\FileManagerHelperInterface;
 use Pentatrion\UploadBundle\Service\UploadedFileHelperInterface;
 use Symfony\Component\Form\AbstractType;
@@ -25,6 +26,7 @@ class TextFilePickerType extends AbstractType
     /**
      * @throws ExceptionInterface
      */
+    #[Override]
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $value = $form->getData();
@@ -48,11 +50,13 @@ class TextFilePickerType extends AbstractType
         $view->vars['attr']['data-text-form-file-picker'] = 'true';
     }
 
+    #[Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired('fileManagerConfig');
     }
 
+    #[Override]
     public function getParent(): ?string
     {
         return TextType::class;

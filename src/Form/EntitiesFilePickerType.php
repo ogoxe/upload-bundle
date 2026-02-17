@@ -2,6 +2,7 @@
 
 namespace Pentatrion\UploadBundle\Form;
 
+use Override;
 use Pentatrion\UploadBundle\Service\FileManagerHelperInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -23,6 +24,7 @@ class EntitiesFilePickerType extends AbstractType
     /**
      * @throws ExceptionInterface
      */
+    #[Override]
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $value = $form->getData();
@@ -38,6 +40,7 @@ class EntitiesFilePickerType extends AbstractType
         $view->vars['attr']['data-uploaded-files'] = json_encode($this->normalizer->normalize($value));
     }
 
+    #[Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired('fileManagerConfig');
@@ -48,6 +51,7 @@ class EntitiesFilePickerType extends AbstractType
         $resolver->setDefault('delete_empty', true);
     }
 
+    #[Override]
     public function getParent(): ?string
     {
         return CollectionType::class;

@@ -6,6 +6,7 @@ use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use Imagine\Image\Point;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Override;
 use Pentatrion\UploadBundle\Exception\InformativeException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -313,6 +314,7 @@ class FileHelper implements ServiceSubscriberInterface
         return true;
     }
 
+    #[Override]
     public static function getSubscribedServices(): array
     {
         return [

@@ -3,6 +3,7 @@
 namespace Pentatrion\UploadBundle\Twig;
 
 use Exception;
+use Override;
 use Pentatrion\UploadBundle\Entity\UploadedFile;
 use Pentatrion\UploadBundle\Service\UploadedFileHelperInterface;
 use Twig\Extension\AbstractExtension;
@@ -14,6 +15,7 @@ class AssetExtension extends AbstractExtension
     {
     }
 
+    #[Override]
     public function getFunctions(): array
     {
         return [
