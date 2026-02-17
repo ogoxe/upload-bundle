@@ -31,6 +31,7 @@ class PentatrionUploadExtension extends Extension
             if (str_starts_with((string) $origin['path'], $webRoot)) {
                 $origin['web_prefix'] = substr((string) $origin['path'], strlen($webRoot));
             }
+
             $origins[$key] = $origin;
         }
 
@@ -45,6 +46,7 @@ class PentatrionUploadExtension extends Extension
         if (null !== $config['uploaded_file_helper']) {
             $container->setAlias(UploadedFileHelperInterface::class, $config['uploaded_file_helper']);
         }
+
         if (null !== $config['file_manager_helper']) {
             $container->setAlias(FileManagerHelperInterface::class, $config['file_manager_helper']);
         }

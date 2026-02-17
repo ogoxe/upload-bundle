@@ -72,6 +72,7 @@ class FileHelper implements ServiceSubscriberInterface
         if (isset($options['urlize']) && $options['urlize']) {
             $filenameWithoutExtension = Urlizer::urlize($filenameWithoutExtension);
         }
+
         if (isset($options['unique']) && $options['unique']) {
             $filenameWithoutExtension = $filenameWithoutExtension.'-'.uniqid();
         } elseif (file_exists($dir.DIRECTORY_SEPARATOR.$filenameWithoutExtension.'.'.$extension)) {
@@ -79,6 +80,7 @@ class FileHelper implements ServiceSubscriberInterface
             while (file_exists($dir.DIRECTORY_SEPARATOR.$filenameWithoutExtension.'-'.$counter.'.'.$extension)) {
                 ++$counter;
             }
+
             $filenameWithoutExtension = $filenameWithoutExtension.'-'.$counter;
         }
 
@@ -155,11 +157,13 @@ class FileHelper implements ServiceSubscriberInterface
                 $extension = $file->guessExtension();
                 $options['extension'] = $extension;
             }
+
             if ($file instanceof UploadedFile) {
                 $filename = $file->getClientOriginalName();
             } else {
                 $filename = $file->getFilename();
             }
+
             $newFilename = $this->sanitizeFilename($filename, $destAbsDir, array_merge($options, ['urlize' => true]));
         }
 
@@ -167,6 +171,7 @@ class FileHelper implements ServiceSubscriberInterface
         if (!$fs->exists($destAbsDir)) {
             $fs->mkdir($destAbsDir);
         }
+
         $file->move($destAbsDir, $newFilename);
 
         return $this->uploadedFileHelper->getUploadedFile(($destRelDir ? $destRelDir.DIRECTORY_SEPARATOR : '').$newFilename, $originName);
@@ -201,6 +206,7 @@ class FileHelper implements ServiceSubscriberInterface
                 for ($i = 1; $i <= $totalChunks; ++$i) {
                     fwrite($fp, file_get_contents($tempDir.DIRECTORY_SEPARATOR.'chunk.part'.$i));
                 }
+
                 fclose($fp);
             }
 
@@ -267,6 +273,7 @@ class FileHelper implements ServiceSubscriberInterface
         if (!file_exists($absoluteDir)) {
             return;
         }
+
         $finder->in($absoluteDir)->depth('== 0');
         foreach ($finder as $file) {
             if ($this->container->has('cachemanager')) {
@@ -276,6 +283,7 @@ class FileHelper implements ServiceSubscriberInterface
 
             $fs->remove($file);
         }
+
         $fs->remove($absoluteDir);
     }
 
@@ -288,6 +296,7 @@ class FileHelper implements ServiceSubscriberInterface
         if (!class_exists(Imagine::class)) {
             throw new InformativeException(401, 'Unable to crop image. Did you install Imagine ? composer require imagine/imagine');
         }
+
         $absolutePath = $this->uploadedFileHelper->getAbsolutePath($uploadRelativePath, $origin);
         $imagine = new Imagine();
         $image = $imagine->open($absolutePath);
@@ -295,9 +304,11 @@ class FileHelper implements ServiceSubscriberInterface
         if (0 !== $angle) {
             $image->rotate($angle);
         }
+
         if ($width >= 1 && $height >= 1) {
             $image->crop(new Point($x, $y), new Box($width, $height));
         }
+
         if ($finalWidth >= 1 && $finalHeight >= 1) {
             $image->resize(new Box($finalWidth, $finalHeight));
         }

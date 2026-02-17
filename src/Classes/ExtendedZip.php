@@ -9,10 +9,12 @@ class ExtendedZip extends ZipArchive
 {
 
     // Member function to add a whole file system subtree to the archive
-    public function addTree($dirname, $localName = ''): void
+    public function addTree(string $dirname, $localName = ''): void
     {
-        if ($localName)
+        if ($localName) {
             $this->addEmptyDir($localName);
+        }
+
         $this->_addTree($dirname, $localName);
     }
 
@@ -22,8 +24,9 @@ class ExtendedZip extends ZipArchive
         $dir = opendir($dirname);
         while ($filename = readdir($dir)) {
             // Discard . and ..
-            if ($filename === '.' || $filename === '..')
+            if ($filename === '.' || $filename === '..') {
                 continue;
+            }
 
             // Proceed according to type
             $path = $dirname . '/' . $filename;
@@ -37,12 +40,13 @@ class ExtendedZip extends ZipArchive
                 $this->addFile($path, $localPath);
             }
         }
+
         closedir($dir);
     }
 
     // Helper function
     // Attention, plante si aucun fichier.
-    public static function zipTree($dirname, $zipFilename, $flags = 0, $localName = ''): void
+    public static function zipTree(string $dirname, $zipFilename, $flags = 0, $localName = ''): void
     {
         $zip = new self();
         $zip->open($zipFilename, $flags);
@@ -74,6 +78,7 @@ class ExtendedZip extends ZipArchive
                     $zip->addTree($file->getAbsolutePath(), $file->getFilename());
                 }
             }
+
             $zip->close();
         }
 

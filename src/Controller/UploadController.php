@@ -53,7 +53,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
         $absolutePath = $uploadedFileHelper->getAbsolutePath($uploadRelativePath, $origin);
 
         if (!$this->uploadedFileHelper::hasGrantedAccess($uploadedFile, $this->getUser())) {
-            throw new InformativeException(403, 'Vous n\'avez pas les droits suffisants pour voir le contenu de ce fichier !!');
+            throw new InformativeException(403, "Vous n'avez pas les droits suffisants pour voir le contenu de ce fichier !!");
         }
 
         $disposition = 'show' === $mode ? ResponseHeaderBag::DISPOSITION_INLINE : ResponseHeaderBag::DISPOSITION_ATTACHMENT;
@@ -81,6 +81,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
             if (!$this->uploadedFileHelper::hasGrantedAccess($uploadedFile, $user)) {
                 throw new InformativeException(403, 'Le fichier appartient à un projet qui ne vous concerne pas !!');
             }
+
             $files[] = $uploadedFile;
         }
 
@@ -98,7 +99,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
         $readOnly = $request->request->getBoolean('readOnly');
 
         if (empty($infos['newFilename']) || '.' === $infos['newFilename'][0]) {
-            throw new InformativeException(401, 'Le nom de fichier n\'est pas valide');
+            throw new InformativeException(401, "Le nom de fichier n'est pas valide");
         }
 
         $extension = strtolower(pathinfo((string) $infos['newFilename'], PATHINFO_EXTENSION));
@@ -107,7 +108,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
         $newFilename = Urlizer::urlize($filenameWithoutExtension);
 
         if ('' !== $extension) {
-            $newFilename .= ".$extension";
+            $newFilename .= '.' . $extension;
         }
 
         $oldCompletePath = $this->uploadedFileHelper->getAbsolutePath($infos['uploadRelativePath'], $infos['origin']);
@@ -145,9 +146,11 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
         if ($x < 0) {
             $x = 0;
         }
+
         if ($y < 0) {
             $y = 0;
         }
+
         $width = (float) $request->request->get('width');
         $height = (float) $request->request->get('height');
         $finalWidth = (float) $request->request->get('finalWidth');
@@ -182,8 +185,8 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
             }
         }
 
-        if (0 != count($errors)) {
-            throw new InformativeException(401, 'Impossible de supprimer le(s) fichier(s) : '.implode(', ', $errors).' car vous n\'avez pas les droits suffisants.');
+        if ([] !== $errors) {
+            throw new InformativeException(401, 'Impossible de supprimer le(s) fichier(s) : '.implode(', ', $errors)." car vous n'avez pas les droits suffisants.");
         }
 
         return $this->json([
@@ -203,6 +206,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
         if (strlen($filename) > 128) {
             throw new InformativeException(500, 'Le nom du dossier est trop long.');
         }
+
         $completePath = $this->uploadedFileHelper->getAbsolutePath(
             $infos['directory'].'/'.$filename,
             $infos['origin']
@@ -277,6 +281,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
             if (!$fs->exists($chunkPath)) {
                 return new JsonResponse('', 204);
             }
+
         // le fichier existe, on vérifiera comme lors d'un upload si on ne peut pas
         // déjà assembler le fichier
         } else {
@@ -300,7 +305,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
             throw new InformativeException(500, "Impossible d'assembler les fragments en fichier");
         }
 
-        if ($uploadedFile) {
+        if ($uploadedFile !== null) {
             return $this->json([
                 'file' => $normalizer->normalize($uploadedFile),
                 'oldLiipId' => $tempLiipId,

@@ -120,7 +120,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     {
         $originName ??= $this->defaultOriginName;
 
-        return "@$originName:$uploadRelativePath";
+        return sprintf('@%s:%s', $originName, $uploadRelativePath);
     }
 
     #[Override]
@@ -145,6 +145,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         if (!$this->container->has('cache.manager')) {
             throw new LogicException('You can not use the "getUrlThumbnail" method if the LiipImagineBundle is not available. Try running "composer require liip/imagine-bundle".');
         }
+
         try {
             $cacheManager = $this->container->get('cache.manager');
         } catch (NotFoundExceptionInterface|ContainerExceptionInterface) {
@@ -219,7 +220,8 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         $directory = false === $lastSlash ? '' : substr((string) $uploadRelativePath, 0, $lastSlash);
 
         if ($file->isDir()) {
-            $mimeGroup = $mimeType = null;
+            $mimeGroup = null;
+            $mimeType = null;
             $icon = 'folder.svg';
         } else {
             $mimeType = MimeTypes::getDefault()->guessMimeType($file->getPathname());
@@ -230,7 +232,8 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         if ('image' === $mimeGroup && 'image/svg' !== $mimeType && 'image/svg+xml' !== $mimeType) {
             [$imageWidth, $imageHeight] = getimagesize($absolutePath);
         } else {
-            $imageWidth = $imageHeight = null;
+            $imageWidth = null;
+            $imageHeight = null;
         }
 
         return (new UploadedFile())
@@ -273,6 +276,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
             if ($file->isDir() || is_null($mimeGroup)) {
                 return true;
             }
+
             $mimeType = MimeTypes::getDefault()->guessMimeType($file->getPathname());
             $fileMimeGroup = explode('/', $mimeType)[0];
 
@@ -286,6 +290,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
                 $originName
             );
         }
+
         $data = [
             'files' => $files,
         ];

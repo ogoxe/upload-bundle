@@ -37,15 +37,15 @@ class Urlizer
         for ($i = 0; $i < $stringLength; ++$i) {
             if (ord($string[$i]) < 0x80) { // 0bbbbbbb
                 continue;
-            }  elseif ((ord($string[$i]) & 0xE0) == 0xC0) { // 110bbbbb
+            }  elseif ((ord($string[$i]) & 0xE0) === 0xC0) { // 110bbbbb
                 $n = 1;
-            } elseif ((ord($string[$i]) & 0xF0) == 0xE0) { //1110bbbb
+            } elseif ((ord($string[$i]) & 0xF0) === 0xE0) { //1110bbbb
                 $n = 2;
-            } elseif ((ord($string[$i]) & 0xF8) == 0xF0) { // 11110bbb
+            } elseif ((ord($string[$i]) & 0xF8) === 0xF0) { // 11110bbb
                 $n = 3;
-            } elseif ((ord($string[$i]) & 0xFC) == 0xF8) { // 111110bb
+            } elseif ((ord($string[$i]) & 0xFC) === 0xF8) { // 111110bb
                 $n = 4;
-            } elseif ((ord($string[$i]) & 0xFE) == 0xFC) { // 1111110b
+            } elseif ((ord($string[$i]) & 0xFE) === 0xFC) { // 1111110b
                 $n = 5;
             } else {
                 return false; // Does not match any model
@@ -333,7 +333,7 @@ class Urlizer
     {
         static $UTF8_TO_ASCII;
 
-        if (strlen($str) == 0) {
+        if ($str === '') {
             return '';
         }
 
@@ -343,22 +343,28 @@ class Urlizer
         foreach ($chars as $i => $c) {
             if (ord($c[0]) <= 127) {
                 continue;
-            } // ASCII - next please
+            }
+             // ASCII - next please
             if (ord($c[0]) >= 192 && ord($c[0]) <= 223) {
                 $ord = (ord($c[0]) - 192) * 64 + (ord($c[1]) - 128);
             }
+
             if (ord($c[0]) >= 224 && ord($c[0]) <= 239) {
                 $ord = (ord($c[0]) - 224) * 4096 + (ord($c[1]) - 128) * 64 + (ord($c[2]) - 128);
             }
+
             if (ord($c[0]) >= 240 && ord($c[0]) <= 247) {
                 $ord = (ord($c[0]) - 240) * 262144 + (ord($c[1]) - 128) * 4096 + (ord($c[2]) - 128) * 64 + (ord($c[3]) - 128);
             }
+
             if (ord($c[0]) >= 248 && ord($c[0]) <= 251) {
                 $ord = (ord($c[0]) - 248) * 16777216 + (ord($c[1]) - 128) * 262144 + (ord($c[2]) - 128) * 4096 + (ord($c[3]) - 128) * 64 + (ord($c[4]) - 128);
             }
+
             if (ord($c[0]) >= 252 && ord($c[0]) <= 253) {
                 $ord = (ord($c[0]) - 252) * 1073741824 + (ord($c[1]) - 128) * 16777216 + (ord($c[2]) - 128) * 262144 + (ord($c[3]) - 128) * 4096 + (ord($c[4]) - 128) * 64 + (ord($c[5]) - 128);
             }
+
             if (ord($c[0]) >= 254) {
                 $chars[$i] = $unknown;
                 continue;
@@ -437,31 +443,31 @@ class Urlizer
         $len = strlen($str);
         for ($i = 0; $i < $len; ++$i) {
             $in = ord($str[$i]);
-            if ($mState == 0) {
+            if ($mState === 0) {
                 // When mState is zero we expect either a US-ASCII character or a
                 // multi-octet sequence.
-                if (0 == (0x80 & ($in))) {
+                if (0 === (0x80 & $in)) {
                     // US-ASCII, pass straight through.
                     $mBytes = 1;
-                } elseif (0xC0 == (0xE0 & ($in))) {
+                } elseif (0xC0 === (0xE0 & $in)) {
                     // First octet of 2 octet sequence
                     $mUcs4 = ($in);
                     $mUcs4 = ($mUcs4 & 0x1F) << 6;
                     $mState = 1;
                     $mBytes = 2;
-                } elseif (0xE0 == (0xF0 & ($in))) {
+                } elseif (0xE0 === (0xF0 & $in)) {
                     // First octet of 3 octet sequence
                     $mUcs4 = ($in);
                     $mUcs4 = ($mUcs4 & 0x0F) << 12;
                     $mState = 2;
                     $mBytes = 3;
-                } elseif (0xF0 == (0xF8 & ($in))) {
+                } elseif (0xF0 === (0xF8 & $in)) {
                     // First octet of 4 octet sequence
                     $mUcs4 = ($in);
                     $mUcs4 = ($mUcs4 & 0x07) << 18;
                     $mState = 3;
                     $mBytes = 4;
-                } elseif (0xF8 == (0xFC & ($in))) {
+                } elseif (0xF8 === (0xFC & $in)) {
                     /* First octet of 5 octet sequence.
                     *
                     * This is illegal because the encoded codepoint must be either
@@ -474,7 +480,7 @@ class Urlizer
                     $mUcs4 = ($mUcs4 & 0x03) << 24;
                     $mState = 4;
                     $mBytes = 5;
-                } elseif (0xFC == (0xFE & ($in))) {
+                } elseif (0xFC === (0xFE & $in)) {
                     // First octet of 6 octet sequence, see comments for 5 octet sequence.
                     $mUcs4 = ($in);
                     $mUcs4 = ($mUcs4 & 1) << 30;
@@ -486,7 +492,7 @@ class Urlizer
                      */
                     return false;
                 }
-            } elseif (0x80 == (0xC0 & ($in))) {
+            } elseif (0x80 === (0xC0 & $in)) {
                 // When mState is non-zero, we expect a continuation of the multi-octet
                 // sequence
                 // Legal continuation.
@@ -498,22 +504,23 @@ class Urlizer
                  * End of the multi-octet sequence. mUcs4 now contains the final
                  * Unicode codepoint to be output
                  */
-                if (0 == --$mState) {
+                if (0 === --$mState) {
                     /*
                     * Check for illegal sequences and codepoints.
                     */
                     // From Unicode 3.1, non-shortest form is illegal
-                    if (((2 == $mBytes) && ($mUcs4 < 0x0080)) ||
-                        ((3 == $mBytes) && ($mUcs4 < 0x0800)) ||
-                        ((4 == $mBytes) && ($mUcs4 < 0x10000)) ||
+                    if (((2 === $mBytes) && ($mUcs4 < 0x0080)) ||
+                        ((3 === $mBytes) && ($mUcs4 < 0x0800)) ||
+                        ((4 === $mBytes) && ($mUcs4 < 0x10000)) ||
                         (4 < $mBytes) ||
                         // From Unicode 3.2, surrogate characters are illegal
-                        (($mUcs4 & 0xFFFFF800) == 0xD800) ||
+                        (($mUcs4 & 0xFFFFF800) === 0xD800) ||
                         // Codepoints outside the Unicode range are illegal
                         ($mUcs4 > 0x10FFFF)
                     ) {
                         return false;
                     }
+
                     //initialize UTF8 cache
                     $mState = 0;
                     $mUcs4 = 0;

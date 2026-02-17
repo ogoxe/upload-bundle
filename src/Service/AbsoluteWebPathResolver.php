@@ -25,12 +25,12 @@ class AbsoluteWebPathResolver extends WebPathResolver implements ResolverInterfa
     {
         return sprintf(
             '/%s',
-            ltrim($this->getFileUrl($path, $filter), '/')
+            ltrim((string) $this->getFileUrl($path, $filter), '/')
         );
     }
 
     #[Override]
-    public function getFilePath($path, $filter): string
+    protected function getFilePath($path, $filter): string
     {
         return $this->webRoot . '/' . $this->getFullPath($path, $filter);
     }
