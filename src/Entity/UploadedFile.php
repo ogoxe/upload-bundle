@@ -2,84 +2,56 @@
 
 namespace Pentatrion\UploadBundle\Entity;
 
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- */
+#[ORM\Entity]
 class UploadedFile
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $liipId;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $liipId = null;
 
-    /**
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    private $mimeGroup;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $mimeGroup = null;
 
-    /**
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    private $mimeType;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $mimeType = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $filename;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $filename = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $directory;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $directory = null;
 
-    /**
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    private $origin;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $origin = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $imageWidth;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $imageWidth = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $imageHeight;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $imageHeight = null;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     */
-    private $type;
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $type = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $size;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $size = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $updatedAt;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?DateTime $updatedAt = null;
 
-    /**
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    private $icon;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $icon = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $public;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $public = null;
 
     private ?string $absolutePath = null;
 
@@ -247,12 +219,12 @@ class UploadedFile
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): self
+    public function setUpdatedAt(?DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
 
