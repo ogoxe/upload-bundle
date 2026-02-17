@@ -74,14 +74,12 @@ class FileHelper implements ServiceSubscriberInterface
         }
         if (isset($options['unique']) && $options['unique']) {
             $filenameWithoutExtension = $filenameWithoutExtension.'-'.uniqid();
-        } else {
-            if (file_exists($dir.DIRECTORY_SEPARATOR.$filenameWithoutExtension.'.'.$extension)) {
-                $counter = 1;
-                while (file_exists($dir.DIRECTORY_SEPARATOR.$filenameWithoutExtension.'-'.$counter.'.'.$extension)) {
-                    ++$counter;
-                }
-                $filenameWithoutExtension = $filenameWithoutExtension.'-'.$counter;
+        } elseif (file_exists($dir.DIRECTORY_SEPARATOR.$filenameWithoutExtension.'.'.$extension)) {
+            $counter = 1;
+            while (file_exists($dir.DIRECTORY_SEPARATOR.$filenameWithoutExtension.'-'.$counter.'.'.$extension)) {
+                ++$counter;
             }
+            $filenameWithoutExtension = $filenameWithoutExtension.'-'.$counter;
         }
 
         return $filenameWithoutExtension.'.'.$extension;
@@ -213,7 +211,7 @@ class FileHelper implements ServiceSubscriberInterface
             $file = new File($tempDir.DIRECTORY_SEPARATOR.'output');
 
             $violations = $this->validateFile($file);
-            if (count($violations) > 0) {
+            if ($violations !== []) {
                 throw new InformativeException(415, implode('\n', $violations));
             }
 

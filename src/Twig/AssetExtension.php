@@ -40,10 +40,10 @@ class AssetExtension extends AbstractExtension
         if (is_string($uploadedFile)) {
             $uploadRelativePath = $uploadedFile;
             $timestamp = true;
-        } else if ($uploadedFile instanceof UploadedFile) {
+        } elseif ($uploadedFile instanceof UploadedFile) {
             $uploadRelativePath = $uploadedFile->getUploadRelativePath();
             $timestamp = $uploadedFile->getUpdatedAt()->format('c');
-        } else if (isset($uploadedFile['uploadRelativePath'])) {
+        } elseif (isset($uploadedFile['uploadRelativePath'])) {
             $uploadRelativePath = $uploadedFile['uploadRelativePath'];
             $timestamp = is_string($uploadedFile['updatedAt']) ? $uploadedFile['updatedAt'] : true;
         }

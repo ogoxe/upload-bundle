@@ -28,9 +28,7 @@ class Urlizer
      *
      * By bmorel at ssi dot fr
      *
-     * @param string $string
      *
-     * @return bool
      */
     public static function seemsUtf8(string $string): bool
     {
@@ -378,11 +376,7 @@ class Urlizer
             }
 
             $newChar = $ord & 255;
-            if (array_key_exists($newChar, $UTF8_TO_ASCII[$bank])) {
-                $chars[$i] = $UTF8_TO_ASCII[$bank][$newChar];
-            } else {
-                $chars[$i] = $unknown;
-            }
+            $chars[$i] = array_key_exists($newChar, $UTF8_TO_ASCII[$bank]) ? $UTF8_TO_ASCII[$bank][$newChar] : $unknown;
         }
 
         return implode('', $chars);
@@ -393,10 +387,7 @@ class Urlizer
      *
      * Does not transliterate correctly eastern languages.
      *
-     * @param string $text
-     * @param string $separator
      *
-     * @return string
      * @see Transliterator::unaccent for the transliteration logic
      *
      */
@@ -412,8 +403,6 @@ class Urlizer
      *
      * Uses transliteration tables to convert any kind of utf8 character.
      *
-     * @param string $text
-     * @param string $separator
      *
      * @return string $text
      */
@@ -434,10 +423,8 @@ class Urlizer
      *
      * @param string $str UTF-8 encoded string
      *
-     * @return bool
      *
      * @author <hsivonen@iki.fi>
-     *
      * @see    http://hsivonen.iki.fi/php-utf8/
      */
     public static function validUtf8(string $str): bool
@@ -499,47 +486,45 @@ class Urlizer
                      */
                     return false;
                 }
-            } else {
+            } elseif (0x80 == (0xC0 & ($in))) {
                 // When mState is non-zero, we expect a continuation of the multi-octet
                 // sequence
-                if (0x80 == (0xC0 & ($in))) {
-                    // Legal continuation.
-                    $shift = ($mState - 1) * 6;
-                    $tmp = $in;
-                    $tmp = ($tmp & 0x0000003F) << $shift;
-                    $mUcs4 |= $tmp;
+                // Legal continuation.
+                $shift = ($mState - 1) * 6;
+                $tmp = $in;
+                $tmp = ($tmp & 0x0000003F) << $shift;
+                $mUcs4 |= $tmp;
+                /*
+                 * End of the multi-octet sequence. mUcs4 now contains the final
+                 * Unicode codepoint to be output
+                 */
+                if (0 == --$mState) {
                     /*
-                     * End of the multi-octet sequence. mUcs4 now contains the final
-                     * Unicode codepoint to be output
-                     */
-                    if (0 == --$mState) {
-                        /*
-                        * Check for illegal sequences and codepoints.
-                        */
-                        // From Unicode 3.1, non-shortest form is illegal
-                        if (((2 == $mBytes) && ($mUcs4 < 0x0080)) ||
-                            ((3 == $mBytes) && ($mUcs4 < 0x0800)) ||
-                            ((4 == $mBytes) && ($mUcs4 < 0x10000)) ||
-                            (4 < $mBytes) ||
-                            // From Unicode 3.2, surrogate characters are illegal
-                            (($mUcs4 & 0xFFFFF800) == 0xD800) ||
-                            // Codepoints outside the Unicode range are illegal
-                            ($mUcs4 > 0x10FFFF)
-                        ) {
-                            return false;
-                        }
-                        //initialize UTF8 cache
-                        $mState = 0;
-                        $mUcs4 = 0;
-                        $mBytes = 1;
+                    * Check for illegal sequences and codepoints.
+                    */
+                    // From Unicode 3.1, non-shortest form is illegal
+                    if (((2 == $mBytes) && ($mUcs4 < 0x0080)) ||
+                        ((3 == $mBytes) && ($mUcs4 < 0x0800)) ||
+                        ((4 == $mBytes) && ($mUcs4 < 0x10000)) ||
+                        (4 < $mBytes) ||
+                        // From Unicode 3.2, surrogate characters are illegal
+                        (($mUcs4 & 0xFFFFF800) == 0xD800) ||
+                        // Codepoints outside the Unicode range are illegal
+                        ($mUcs4 > 0x10FFFF)
+                    ) {
+                        return false;
                     }
-                } else {
-                    /*
-                     *((0xC0 & (*in) != 0x80) && (mState != 0))
-                     * Incomplete multi-octet sequence.
-                     */
-                    return false;
+                    //initialize UTF8 cache
+                    $mState = 0;
+                    $mUcs4 = 0;
+                    $mBytes = 1;
                 }
+            } else {
+                /*
+                 *((0xC0 & (*in) != 0x80) && (mState != 0))
+                 * Incomplete multi-octet sequence.
+                 */
+                return false;
             }
         }
 
@@ -549,18 +534,11 @@ class Urlizer
     /**
      * Cleans up the text and adds separator.
      *
-     * @param string $text
-     * @param string $separator
      *
-     * @return string
      */
     private static function postProcessText(string $text, string $separator): string
     {
-        if (function_exists('mb_strtolower')) {
-            $text = mb_strtolower($text);
-        } else {
-            $text = strtolower($text);
-        }
+        $text = function_exists('mb_strtolower') ? mb_strtolower($text) : strtolower($text);
 
         // Remove apostrophes which are not used as quotes around a string
         $text = preg_replace('/(\\w)\'(\\w)/', '${1}${2}', $text);

@@ -156,11 +156,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         }
 
         if (!is_null($suffix)) {
-            if (is_string($suffix)) {
-                $suffix = '?'.$suffix;
-            } else {
-                $suffix = '?'.time();
-            }
+            $suffix = is_string($suffix) ? '?'.$suffix : '?'.time();
         } else {
             $suffix = '';
         }
@@ -220,11 +216,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         $file = new SplFileInfo($absolutePath);
 
         $lastSlash = strrpos((string) $uploadRelativePath, '/');
-        if (false === $lastSlash) {
-            $directory = '';
-        } else {
-            $directory = substr((string) $uploadRelativePath, 0, $lastSlash);
-        }
+        $directory = false === $lastSlash ? '' : substr((string) $uploadRelativePath, 0, $lastSlash);
 
         if ($file->isDir()) {
             $mimeGroup = $mimeType = null;

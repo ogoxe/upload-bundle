@@ -231,7 +231,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
 
         try {
             $violations = $fileHelper->validateFile($fileFromRequest);
-            if (count($violations) > 0) {
+            if ($violations !== []) {
                 throw new InformativeException(415, implode('\n', $violations));
             }
         } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
