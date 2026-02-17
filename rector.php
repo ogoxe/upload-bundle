@@ -9,5 +9,4 @@ return RectorConfig::configure()
         __DIR__ . '/src',
     ])
     ->withPhpSets(php83: true)
-    ->withDeadCodeLevel(70)
-    ->withCodeQualityLevel(70);
+    ->withTypeCoverageLevel(100);

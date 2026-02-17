@@ -55,7 +55,7 @@ class FileHelper implements ServiceSubscriberInterface
         }
     }
 
-    public function sanitizeFilename($filename, $dir, $options = []): ?string
+    public function sanitizeFilename($filename, string $dir, array $options = []): ?string
     {
         if (isset($options['prefix'])) {
             $filename = $options['prefix'].$filename;
@@ -144,7 +144,7 @@ class FileHelper implements ServiceSubscriberInterface
     // les droits seront fixés
     // pour un admin http:http 644
     // pour un client http:http 664
-    public function uploadFile(File $file, $destRelDir, $originName = null, $options = []): ?\Pentatrion\UploadBundle\Entity\UploadedFile
+    public function uploadFile(File $file, ?string $destRelDir, $originName = null, array $options = []): ?\Pentatrion\UploadBundle\Entity\UploadedFile
     {
         $destAbsDir = $this->uploadedFileHelper->getAbsolutePath($destRelDir, $originName);
 
@@ -176,7 +176,7 @@ class FileHelper implements ServiceSubscriberInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function createFileFromChunks($tempDir, $filename, $totalSize, $totalChunks, $destRelDir, $originName = null, $options = []): false|\Pentatrion\UploadBundle\Entity\UploadedFile|null
+    public function createFileFromChunks(string $tempDir, $filename, $totalSize, $totalChunks, ?string $destRelDir, $originName = null, $options = []): false|\Pentatrion\UploadBundle\Entity\UploadedFile|null
     {
         $fs = new Filesystem();
         $totalFilesOnServerSize = 0;
@@ -227,7 +227,7 @@ class FileHelper implements ServiceSubscriberInterface
         }
     }
 
-    public function uploadChunkFile(File $file, $destDir, $filename): File
+    public function uploadChunkFile(File $file, $destDir, ?string $filename): File
     {
         $fs = new Filesystem();
         if (!$fs->exists($destDir)) {
@@ -241,7 +241,7 @@ class FileHelper implements ServiceSubscriberInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function delete(string $uploadRelativePath, $originName = null): void
+    public function delete(string $uploadRelativePath, ?string $originName = null): void
     {
         $absolutePath = $this->uploadedFileHelper->getAbsolutePath($uploadRelativePath, $originName);
 
@@ -258,7 +258,7 @@ class FileHelper implements ServiceSubscriberInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function deleteDir(string $uploadRelativeDir, $originName = null): void
+    public function deleteDir(string $uploadRelativeDir, ?string $originName = null): void
     {
         $absoluteDir = $this->uploadedFileHelper->getAbsolutePath($uploadRelativeDir, $originName);
 
@@ -283,7 +283,7 @@ class FileHelper implements ServiceSubscriberInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function cropImage(string $uploadRelativePath, $origin, $x, $y, $width, $height, $finalWidth, $finalHeight, $angle = 0): bool
+    public function cropImage(string $uploadRelativePath, ?string $origin, $x, $y, $width, $height, $finalWidth, $finalHeight, $angle = 0): bool
     {
         if (!class_exists(Imagine::class)) {
             throw new InformativeException(401, 'Unable to crop image. Did you install Imagine ? composer require imagine/imagine');

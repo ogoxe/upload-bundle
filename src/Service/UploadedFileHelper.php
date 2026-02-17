@@ -269,7 +269,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
 
         $files = [];
 
-        $filter = function (SplFileInfo $file) use ($mimeGroup) {
+        $filter = function (SplFileInfo $file) use ($mimeGroup): bool {
             if ($file->isDir() || is_null($mimeGroup)) {
                 return true;
             }

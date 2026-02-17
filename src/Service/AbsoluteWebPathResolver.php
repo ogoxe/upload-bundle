@@ -25,7 +25,7 @@ class AbsoluteWebPathResolver extends WebPathResolver implements ResolverInterfa
     {
         return sprintf(
             '/%s',
-            ltrim((string) $this->getFileUrl($path, $filter), '/')
+            ltrim($this->getFileUrl($path, $filter), '/')
         );
     }
 
@@ -35,7 +35,7 @@ class AbsoluteWebPathResolver extends WebPathResolver implements ResolverInterfa
         return $this->webRoot . '/' . $this->getFullPath($path, $filter);
     }
 
-    private function getFullPath($path, $filter): string
+    private function getFullPath(array|string $path, string $filter): string
     {
         // crude way of sanitizing URL scheme ("protocol") part
         $path = str_replace('://', '---', $path);

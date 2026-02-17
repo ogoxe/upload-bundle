@@ -17,7 +17,7 @@ class ExtendedZip extends ZipArchive
     }
 
     // Internal function, to recurse
-    protected function _addTree($dirname, $localName): void
+    protected function _addTree(string $dirname, ?string $localName): void
     {
         $dir = opendir($dirname);
         while ($filename = readdir($dir)) {

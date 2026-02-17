@@ -25,17 +25,17 @@ class AssetExtension extends AbstractExtension
         ];
     }
 
-    public function getUploadedFileId($uploadRelativePath, $originName = null): string
+    public function getUploadedFileId(string $uploadRelativePath, ?string $originName = null): string
     {
         return $this->uploadedFileHelper->getLiipId($uploadRelativePath, $originName);
     }
 
-    public function getUploadedFileWebPath($uploadRelativePath, $originName = null): string
+    public function getUploadedFileWebPath(string $uploadRelativePath, ?string $originName = null): string
     {
         return $this->uploadedFileHelper->getWebPath($uploadRelativePath, $originName);
     }
 
-    public function getUploadedImageFiltered(mixed $uploadedFile, $filter, $originName = null): string
+    public function getUploadedImageFiltered(mixed $uploadedFile, string $filter, ?string $originName = null): string
     {
         if (is_string($uploadedFile)) {
             $uploadRelativePath = $uploadedFile;

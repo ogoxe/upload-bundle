@@ -81,7 +81,7 @@ class UploadedFile
      */
     private $public;
 
-    private $absolutePath;
+    private ?string $absolutePath = null;
 
     // chemin relatif par rapport aux origines définies dans pentatrion_upload.yaml
     // ex: projet/mon-projet/fichier.jpg
