@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\Service;
 
 /**
@@ -344,6 +346,7 @@ class Urlizer
             if (ord($c[0]) <= 127) {
                 continue;
             }
+
              // ASCII - next please
             if (ord($c[0]) >= 192 && ord($c[0]) <= 223) {
                 $ord = (ord($c[0]) - 192) * 64 + (ord($c[1]) - 128);

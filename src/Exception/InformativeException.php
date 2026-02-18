@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\Exception;
 
 use Symfony\Component\HttpKernel\Exception\HttpException;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\Service;
 
 use Imagine\Gd\Imagine;
@@ -42,16 +44,16 @@ class FileHelper implements ServiceSubscriberInterface
     public function purgeUploadsDirectory(): void
     {
         $finder = new Finder();
-        $fs = new Filesystem();
+        $filesystem = new Filesystem();
 
         $finder->in($this->publicUploadsOrigin['path'])->depth('== 0');
         foreach ($finder as $file) {
-            $fs->remove($file);
+            $filesystem->remove($file);
         }
 
         $finder->in($this->liipCacheDir)->depth('== 0');
         foreach ($finder as $file) {
-            $fs->remove($file);
+            $filesystem->remove($file);
         }
     }
 
@@ -167,9 +169,9 @@ class FileHelper implements ServiceSubscriberInterface
             $newFilename = $this->sanitizeFilename($filename, $destAbsDir, array_merge($options, ['urlize' => true]));
         }
 
-        $fs = new Filesystem();
-        if (!$fs->exists($destAbsDir)) {
-            $fs->mkdir($destAbsDir);
+        $filesystem = new Filesystem();
+        if (!$filesystem->exists($destAbsDir)) {
+            $filesystem->mkdir($destAbsDir);
         }
 
         $file->move($destAbsDir, $newFilename);
@@ -183,7 +185,7 @@ class FileHelper implements ServiceSubscriberInterface
      */
     public function createFileFromChunks(string $tempDir, $filename, $totalSize, $totalChunks, ?string $destRelDir, $originName = null, $options = []): false|\Pentatrion\UploadBundle\Entity\UploadedFile|null
     {
-        $fs = new Filesystem();
+        $filesystem = new Filesystem();
         $totalFilesOnServerSize = 0;
         $files = array_diff(scandir($tempDir), ['..', '.', 'output', 'done']);
 
@@ -192,7 +194,7 @@ class FileHelper implements ServiceSubscriberInterface
 
         // si on reprend un upload au milieu des tests, on parviendra à générer le fichier, il faut donc que
         // les tests suivants renvoient tout de suite les bonnes infos.
-        if ($fs->exists($destAbsDir.DIRECTORY_SEPARATOR.$newFilename)) {
+        if ($filesystem->exists($destAbsDir.DIRECTORY_SEPARATOR.$newFilename)) {
             return $this->uploadedFileHelper->getUploadedFile(($destRelDir ? $destRelDir.DIRECTORY_SEPARATOR : '').$newFilename, $originName);
         }
 
@@ -210,8 +212,8 @@ class FileHelper implements ServiceSubscriberInterface
                 fclose($fp);
             }
 
-            if (!$fs->exists($destAbsDir)) {
-                $fs->mkdir($destAbsDir);
+            if (!$filesystem->exists($destAbsDir)) {
+                $filesystem->mkdir($destAbsDir);
             }
 
             $file = new File($tempDir.DIRECTORY_SEPARATOR.'output');
@@ -224,8 +226,8 @@ class FileHelper implements ServiceSubscriberInterface
             $file->move($destAbsDir, $newFilename);
 
             // permet de supprimer récursivement sans problème avec les chunks concurrents
-            $fs->rename($tempDir, $tempDir.'_done');
-            $fs->remove($tempDir.'_done');
+            $filesystem->rename($tempDir, $tempDir.'_done');
+            $filesystem->remove($tempDir.'_done');
 
             return $this->uploadedFileHelper->getUploadedFile(($destRelDir ? $destRelDir.DIRECTORY_SEPARATOR : '').$newFilename, $originName);
         } else {
@@ -235,9 +237,9 @@ class FileHelper implements ServiceSubscriberInterface
 
     public function uploadChunkFile(File $file, $destDir, ?string $filename): File
     {
-        $fs = new Filesystem();
-        if (!$fs->exists($destDir)) {
-            $fs->mkdir($destDir);
+        $filesystem = new Filesystem();
+        if (!$filesystem->exists($destDir)) {
+            $filesystem->mkdir($destDir);
         }
 
         return $file->move($destDir, $filename);
@@ -251,8 +253,8 @@ class FileHelper implements ServiceSubscriberInterface
     {
         $absolutePath = $this->uploadedFileHelper->getAbsolutePath($uploadRelativePath, $originName);
 
-        $fs = new Filesystem();
-        $fs->remove($absolutePath);
+        $filesystem = new Filesystem();
+        $filesystem->remove($absolutePath);
 
         if ($this->container->has('cachemanager')) {
             $liipPath = $this->uploadedFileHelper->getLiipPath($uploadRelativePath, $originName);
@@ -269,7 +271,7 @@ class FileHelper implements ServiceSubscriberInterface
         $absoluteDir = $this->uploadedFileHelper->getAbsolutePath($uploadRelativeDir, $originName);
 
         $finder = new Finder();
-        $fs = new Filesystem();
+        $filesystem = new Filesystem();
         if (!file_exists($absoluteDir)) {
             return;
         }
@@ -281,10 +283,10 @@ class FileHelper implements ServiceSubscriberInterface
                 $this->container->get('cachemanager')->remove($liipPath);
             }
 
-            $fs->remove($file);
+            $filesystem->remove($file);
         }
 
-        $fs->remove($absoluteDir);
+        $filesystem->remove($absoluteDir);
     }
 
     /**

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\EventSubscriber;
 
 use Override;
@@ -15,20 +17,20 @@ readonly class ExceptionSubscriber implements EventSubscriberInterface
     {
     }
 
-    public function onKernelException(ExceptionEvent $event): void
+    public function onKernelException(ExceptionEvent $exceptionEvent): void
     {
-        $exception = $event->getThrowable();
+        $throwable = $exceptionEvent->getThrowable();
 
-        if (!$exception instanceof InformativeException) {
+        if (!$throwable instanceof InformativeException) {
             return;
         }
 
-        $this->logger->notice($exception->getMessage());
-        $response = new JsonResponse([
-            'title' => $exception->getMessage(),
-            'status' => $exception->getStatusCode()
+        $this->logger->notice($throwable->getMessage());
+        $jsonResponse = new JsonResponse([
+            'title' => $throwable->getMessage(),
+            'status' => $throwable->getStatusCode()
         ]);
-        $event->setResponse($response);
+        $exceptionEvent->setResponse($jsonResponse);
     }
 
     #[Override]

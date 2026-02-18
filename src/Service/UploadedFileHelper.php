@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\Service;
 
 use DateTime;
@@ -261,9 +263,9 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
 
         $absPath = $this->getAbsolutePath($uploadDirectory, $originName);
 
-        $fs = new Filesystem();
-        if (!$fs->exists($absPath)) {
-            $fs->mkdir($absPath);
+        $filesystem = new Filesystem();
+        if (!$filesystem->exists($absPath)) {
+            $filesystem->mkdir($absPath);
         }
 
         if (!is_dir($absPath)) {

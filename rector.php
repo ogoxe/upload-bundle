@@ -8,8 +8,16 @@ return RectorConfig::configure()
     ->withPaths([
         __DIR__ . '/src',
     ])
-    ->withPhpSets(php83: true)
-    ->withTypeCoverageLevel(63)
-    ->withDeadCodeLevel(59)
-    ->withCodeQualityLevel(78)
-    ->withCodingStyleLevel(27);
+    ->withPhpSets(php83: true)->withPreparedSets(
+        deadCode: true,
+        codeQuality: true,
+        codingStyle: true,
+        typeDeclarations: true,
+        privatization: true,
+        naming: true,
+        rectorPreset: true,
+        phpunitCodeQuality: true,
+        doctrineCodeQuality: true,
+        symfonyCodeQuality: true,
+        symfonyConfigs: true,
+    );

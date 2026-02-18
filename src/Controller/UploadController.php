@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\Controller;
 
 use Exception;
@@ -16,6 +18,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -27,18 +30,20 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
     public function __construct(
         private readonly UploadedFileHelperInterface $uploadedFileHelper,
         private readonly LoggerInterface $logger,
+        private readonly NormalizerInterface $normalizer,
+        private readonly FileHelper $fileHelper,
     ) {}
 
     /**
      * @throws ExceptionInterface
      */
-    public function getFiles(Request $request, NormalizerInterface $normalizer): JsonResponse
+    public function getFiles(Request $request): JsonResponse
     {
         $directory = $request->request->get('directory');
         $origin = $request->request->get('origin');
         $mimeGroup = $request->request->get('mimeGroup');
 
-        return $this->json($normalizer->normalize($this->uploadedFileHelper->getUploadedFilesFromDirectory(
+        return $this->json($this->normalizer->normalize($this->uploadedFileHelper->getUploadedFilesFromDirectory(
             $directory,
             $origin,
             $mimeGroup,
@@ -47,10 +52,10 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
     }
 
     #[Route(path: '/file-manager-endpoint/media-show-file', name: 'file_manager_endpoint_media_show_file')]
-    public function showFile($mode, $origin, $uploadRelativePath, UploadedFileHelperInterface $uploadedFileHelper): BinaryFileResponse
+    public function showFile($mode, $origin, $uploadRelativePath): BinaryFileResponse
     {
-        $uploadedFile = $uploadedFileHelper->getUploadedFile($uploadRelativePath, $origin);
-        $absolutePath = $uploadedFileHelper->getAbsolutePath($uploadRelativePath, $origin);
+        $uploadedFile = $this->uploadedFileHelper->getUploadedFile($uploadRelativePath, $origin);
+        $absolutePath = $this->uploadedFileHelper->getAbsolutePath($uploadRelativePath, $origin);
 
         if (!$this->uploadedFileHelper::hasGrantedAccess($uploadedFile, $this->getUser())) {
             throw new InformativeException(403, "Vous n'avez pas les droits suffisants pour voir le contenu de ce fichier !!");
@@ -58,14 +63,14 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
 
         $disposition = 'show' === $mode ? ResponseHeaderBag::DISPOSITION_INLINE : ResponseHeaderBag::DISPOSITION_ATTACHMENT;
 
-        $response = $this->file($absolutePath, null, $disposition);
+        $binaryFileResponse = $this->file($absolutePath, null, $disposition);
 
         // bug sinon cela télécharge l'image au lieu de l'afficher !
-        if ('image/svg' === $response->getFile()->getMimeType()) {
-            $response->headers->set('Content-Type', 'image/svg+xml');
+        if ('image/svg' === $binaryFileResponse->getFile()->getMimeType()) {
+            $binaryFileResponse->headers->set('Content-Type', 'image/svg+xml');
         }
 
-        return $response;
+        return $binaryFileResponse;
     }
 
     public function downloadFile(Request $request): BinaryFileResponse
@@ -93,7 +98,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
     /**
      * @throws ExceptionInterface
      */
-    public function editFileRequest(Request $request, NormalizerInterface $normalizer): JsonResponse
+    public function editFileRequest(Request $request): JsonResponse
     {
         $infos = $request->request->all();
         $readOnly = $request->request->getBoolean('readOnly');
@@ -118,8 +123,8 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
 
         if (!$readOnly) {
             try {
-                $fs = new Filesystem();
-                $fs->rename($oldCompletePath, $newCompletePath);
+                $filesystem = new Filesystem();
+                $filesystem->rename($oldCompletePath, $newCompletePath);
             } catch (Exception) {
                 throw new InformativeException(401, 'Impossible de renommer le fichier : '.$infos['filename'].'. Vérifiez que le nom est bien unique.');
             }
@@ -128,14 +133,14 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
         }
 
         return $this->json([
-            'file' => $normalizer->normalize($this->uploadedFileHelper->getUploadedFile($newRelativePath, $infos['origin'])),
+            'file' => $this->normalizer->normalize($this->uploadedFileHelper->getUploadedFile($newRelativePath, $infos['origin'])),
         ]);
     }
 
     /**
      * @throws ExceptionInterface
      */
-    public function cropFile(Request $request, FileHelper $fileHelper, NormalizerInterface $normalizer): JsonResponse
+    public function cropFile(Request $request): JsonResponse
     {
         $uploadRelativePath = $request->request->get('uploadRelativePath');
         $origin = $request->request->get('origin');
@@ -157,13 +162,13 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
         $finalHeight = (float) $request->request->get('finalHeight');
 
         try {
-            $fileHelper->cropImage($uploadRelativePath, $origin, $x, $y, $width, $height, $finalWidth, $finalHeight, $angle);
+            $this->fileHelper->cropImage($uploadRelativePath, $origin, $x, $y, $width, $height, $finalWidth, $finalHeight, $angle);
         } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
             $this->logger->error($e->getMessage());
         }
 
         return $this->json([
-            'file' => $normalizer->normalize($this->uploadedFileHelper->getUploadedFile($uploadRelativePath, $origin)),
+            'file' => $this->normalizer->normalize($this->uploadedFileHelper->getUploadedFile($uploadRelativePath, $origin)),
         ]);
     }
 
@@ -171,7 +176,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function deleteFile(Request $request, FileHelper $fileHelper): JsonResponse
+    public function deleteFile(Request $request): JsonResponse
     {
         $liipIds = $request->request->all()['files'];
         $errors = [];
@@ -181,7 +186,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
             if (!$this->uploadedFileHelper::hasGrantedAccess($uploadedFile, $this->getUser())) {
                 $errors[] = $uploadedFile->getFilename();
             } else {
-                $fileHelper->delete($uploadedFile->getUploadRelativePath(), $uploadedFile->getOrigin());
+                $this->fileHelper->delete($uploadedFile->getUploadRelativePath(), $uploadedFile->getOrigin());
             }
         }
 
@@ -198,7 +203,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
      * @throws ExceptionInterface
      */
     #[Route(path: '/add-directory', name:'media_add_directory')]
-    public function addDirectory(Request $request, NormalizerInterface $normalizer): JsonResponse
+    public function addDirectory(Request $request): JsonResponse
     {
         $infos = $request->request->all();
 
@@ -213,28 +218,28 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
         );
 
         try {
-            $fs = new FileSystem();
-            $fs->mkdir($completePath);
+            $filesystem = new FileSystem();
+            $filesystem->mkdir($completePath);
         } catch (Exception) {
             throw new InformativeException(401, 'Impossible de créer le dossier');
         }
 
         return $this->json([
-            'directory' => $normalizer->normalize($this->uploadedFileHelper->getUploadedFile($infos['directory'].'/'.$filename, $infos['origin'])),
+            'directory' => $this->normalizer->normalize($this->uploadedFileHelper->getUploadedFile($infos['directory'].'/'.$filename, $infos['origin'])),
         ]);
     }
 
     /**
      * @throws ExceptionInterface
      */
-    public function uploadFile(FileHelper $fileHelper, Request $request, NormalizerInterface $normalizer): JsonResponse
+    public function uploadFile(Request $request): JsonResponse
     {
         $fileFromRequest = $request->files->get('file');
         $destRelDir = $request->request->get('directory');
         $origin = $request->request->get('origin');
 
         try {
-            $violations = $fileHelper->validateFile($fileFromRequest);
+            $violations = $this->fileHelper->validateFile($fileFromRequest);
             if ($violations !== []) {
                 throw new InformativeException(415, implode('\n', $violations));
             }
@@ -242,23 +247,23 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
             $this->logger->error($e->getMessage());
         }
 
-        $uploadedFile = $fileHelper->uploadFile(
+        $uploadedFile = $this->fileHelper->uploadFile(
             $fileFromRequest,
             $destRelDir,
             $origin,
         );
 
         return $this->json([
-            'data' => $normalizer->normalize($uploadedFile),
+            'data' => $this->normalizer->normalize($uploadedFile),
         ]);
     }
 
     /**
      * @throws ExceptionInterface
      */
-    public function chunkFile(FileHelper $fileHelper, Request $request, NormalizerInterface $normalizer): JsonResponse
+    public function chunkFile(Request $request): JsonResponse
     {
-        $fs = new Filesystem();
+        $filesystem = new Filesystem();
 
         $destRelDir = $request->query->get('directory');
         $origin = $request->query->get('origin');
@@ -278,8 +283,8 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
             $chunkPath = $tempDir.DIRECTORY_SEPARATOR.$chunkFilename;
 
             // le fichier n'existe pas, on signale qu'il faudra donc l'uploader.
-            if (!$fs->exists($chunkPath)) {
-                return new JsonResponse('', 204);
+            if (!$filesystem->exists($chunkPath)) {
+                return new JsonResponse('', Response::HTTP_NO_CONTENT);
             }
 
         // le fichier existe, on vérifiera comme lors d'un upload si on ne peut pas
@@ -291,14 +296,14 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
                 // if (rand(0,3) === 3) {
                 //     throw new \Exception("random error");
                 // }
-                $fileHelper->uploadChunkFile($fileFromRequest, $tempDir, $chunkFilename);
+                $this->fileHelper->uploadChunkFile($fileFromRequest, $tempDir, $chunkFilename);
             } catch (Exception) {
                 throw new InformativeException(500, 'Impossible de copier le fragment');
             }
         }
 
         try {
-            $uploadedFile = $fileHelper->createFileFromChunks($tempDir, $filename, $totalSize, $totalChunks, $destRelDir, $origin);
+            $uploadedFile = $this->fileHelper->createFileFromChunks($tempDir, $filename, $totalSize, $totalChunks, $destRelDir, $origin);
         } catch (InformativeException $err) {
             throw $err;
         } catch (Exception|NotFoundExceptionInterface|ContainerExceptionInterface) {
@@ -307,7 +312,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
 
         if ($uploadedFile !== null) {
             return $this->json([
-                'file' => $normalizer->normalize($uploadedFile),
+                'file' => $this->normalizer->normalize($uploadedFile),
                 'oldLiipId' => $tempLiipId,
             ]);
         } else {
