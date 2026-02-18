@@ -13,7 +13,7 @@ class Size
         }
 
         $units = ['octets', 'Ko', 'Mo', 'Go', 'To', 'Po'];
-        $factor = floor(log($size, 1024));
+        $factor = (int) floor(log($size, 1024));
 
         return sprintf('%.1f %s', $size / 1024 ** $factor, $units[$factor]);
     }

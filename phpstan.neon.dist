@@ -1,6 +1,6 @@
 # see https://github.com/phpstan/phpstan/blob/master/README.md
 parameters:
-    level: 1
+    level: 3
     paths:
         - src
  #   doctrine:
