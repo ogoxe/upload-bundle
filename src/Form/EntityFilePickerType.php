@@ -20,7 +20,6 @@ class EntityFilePickerType extends AbstractType
 {
     public function __construct(
         private readonly FileManagerHelperInterface $fileManagerHelper,
-        RequestStack $requestStack,
         private readonly NormalizerInterface $normalizer
     ) {}
 

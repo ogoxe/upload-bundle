@@ -20,4 +20,5 @@ return RectorConfig::configure()
         doctrineCodeQuality: true,
         symfonyCodeQuality: true,
         symfonyConfigs: true,
-    );
+    )
+    ->withAttributesSets();

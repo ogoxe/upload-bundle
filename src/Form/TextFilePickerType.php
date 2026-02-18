@@ -21,7 +21,6 @@ class TextFilePickerType extends AbstractType
     public function __construct(
         private readonly FileManagerHelperInterface $fileManagerHelper,
         private readonly UploadedFileHelperInterface $uploadedFileHelper,
-        RequestStack $requestStack,
         private readonly NormalizerInterface $normalizer
     ) {}
 

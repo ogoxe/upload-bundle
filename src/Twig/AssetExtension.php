@@ -39,6 +39,8 @@ class AssetExtension extends AbstractExtension
 
     public function getUploadedImageFiltered(mixed $uploadedFile, string $filter, ?string $originName = null): string
     {
+        $uploadRelativePath = '';
+        $timestamp = null;
         if (is_string($uploadedFile)) {
             $uploadRelativePath = $uploadedFile;
             $timestamp = true;
