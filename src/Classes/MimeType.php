@@ -6,9 +6,9 @@ namespace Pentatrion\UploadBundle\Classes;
 
 class MimeType
 {
-    public static function getIconByMimeType($mimeType): string
+    public static function getIconByMimeType(?string $mimeType): string
     {
-        $mimeTypeExploded = explode('/', (string) $mimeType);
+        $mimeTypeExploded = explode('/', $mimeType);
 
         return match ($mimeTypeExploded[0]) {
             'image' => match ($mimeTypeExploded[1]) {

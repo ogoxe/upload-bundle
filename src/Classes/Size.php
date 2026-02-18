@@ -6,7 +6,7 @@ namespace Pentatrion\UploadBundle\Classes;
 
 class Size
 {
-    public static function getHumanSize($size): string
+    public static function getHumanSize(float|int $size): string
     {
         if ($size <= 0) {
             return '';

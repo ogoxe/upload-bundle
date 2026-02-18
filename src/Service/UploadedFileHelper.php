@@ -45,17 +45,17 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         ];
     }
 
-    public function __construct(protected $origins, protected ContainerInterface $container, protected $defaultOriginName, protected $liipFilters)
+    public function __construct(protected mixed $origins, protected ContainerInterface $container, protected mixed $defaultOriginName, protected mixed $liipFilters)
     {
     }
 
-    public function isOriginPublic($originName): bool
+    public function isOriginPublic(mixed $originName): bool
     {
         return isset($this->origins[$originName]['web_prefix']);
     }
 
     #[Override]
-    public function getAbsolutePath($uploadRelativePath = '', $originName = null): string
+    public function getAbsolutePath(mixed $uploadRelativePath = '', mixed $originName = null): string
     {
         if ($uploadRelativePath instanceof UploadedFile) {
             $relativePath = $uploadRelativePath->getUploadRelativePath();
@@ -80,7 +80,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
      * @throws NotFoundExceptionInterface
      */
     #[Override]
-    public function getWebPath($uploadRelativePath, $originName = null): string
+    public function getWebPath(mixed $uploadRelativePath, mixed $originName = null): string
     {
         $originName ??= $this->defaultOriginName;
 
@@ -96,7 +96,24 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     }
 
     #[Override]
-    public function getLiipPathFromFile(SplFileInfo $file, $originName = null): string
+    public function getLiipPath(?string $uploadRelativePath, mixed $originName = null): string
+    {
+        $originName ??= $this->defaultOriginName;
+
+        return $this->origins[$originName]['liip_path'].'/'.$uploadRelativePath;
+    }
+
+    // renvoie un identifiant pour liipImagine.
+    #[Override]
+    public function getLiipId(mixed $uploadRelativePath, mixed $originName = null): string
+    {
+        $originName ??= $this->defaultOriginName;
+
+        return sprintf('@%s:%s', $originName, $uploadRelativePath);
+    }
+
+    #[Override]
+    public function getLiipPathFromFile(SplFileInfo $file, mixed $originName = null): string
     {
         $originName ??= $this->defaultOriginName;
 
@@ -109,26 +126,9 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     }
 
     #[Override]
-    public function getLiipPath($uploadRelativePath, $originName = null): string
+    public function parseLiipId(string $liipId): array
     {
-        $originName ??= $this->defaultOriginName;
-
-        return $this->origins[$originName]['liip_path'].'/'.$uploadRelativePath;
-    }
-
-    // renvoie un identifiant pour liipImagine.
-    #[Override]
-    public function getLiipId($uploadRelativePath, $originName = null): string
-    {
-        $originName ??= $this->defaultOriginName;
-
-        return sprintf('@%s:%s', $originName, $uploadRelativePath);
-    }
-
-    #[Override]
-    public function parseLiipId($liipId): array
-    {
-        $str = substr((string) $liipId, 1);
+        $str = substr($liipId, 1);
         $firstColon = strpos($str, ':');
         $origin = substr($str, 0, $firstColon);
         $uploadRelativePath = substr($str, $firstColon + 1);
@@ -142,7 +142,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
      * à partir d'un webPath retrouve l'url de son miniature
      */
     #[Override]
-    public function getUrlThumbnail($liipPath, $filter, array $runtimeConfig = [], $suffix = null): ?string
+    public function getUrlThumbnail(mixed $liipPath, mixed $filter, array $runtimeConfig = [], mixed $suffix = null): ?string
     {
         if (!$this->container->has('cache.manager')) {
             throw new LogicException('You can not use the "getUrlThumbnail" method if the LiipImagineBundle is not available. Try running "composer require liip/imagine-bundle".');
@@ -191,25 +191,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     }
 
     #[Override]
-    public function getUploadedFileByLiipId($liipId): UploadedFile
-    {
-        [$uploadRelativePath, $origin] = $this->parseLiipId($liipId);
-
-        return $this->getUploadedFile($uploadRelativePath, $origin);
-    }
-
-    #[Override]
-    public function addAbsolutePath(UploadedFile $uploadedFile): UploadedFile
-    {
-        $uploadedFile->setAbsolutePath(
-            $this->getAbsolutePath($uploadedFile->getUploadRelativePath(), $uploadedFile->getOrigin())
-        );
-
-        return $uploadedFile;
-    }
-
-    #[Override]
-    public function getUploadedFile($uploadRelativePath, $originName = null): ?UploadedFile
+    public function getUploadedFile(mixed $uploadRelativePath, mixed $originName = null): ?UploadedFile
     {
         $absolutePath = $this->getAbsolutePath($uploadRelativePath, $originName);
         if (!file_exists($absolutePath)) {
@@ -257,8 +239,20 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     }
 
     #[Override]
-    public function getUploadedFilesFromDirectory($uploadDirectory, $originName = null, $mimeGroup = null, $withDirectoryInfos = false): array
+    public function getUploadedFileByLiipId(string $liipId): UploadedFile
     {
+        [$uploadRelativePath, $origin] = $this->parseLiipId($liipId);
+
+        return $this->getUploadedFile($uploadRelativePath, $origin);
+    }
+
+    #[Override]
+    public function getUploadedFilesFromDirectory(
+        mixed $uploadDirectory,
+        mixed $originName = null,
+        mixed $mimeGroup = null,
+        bool $withDirectoryInfos = false
+    ): array {
         $finder = (new Finder())->sortByType()->depth('== 0');
 
         $absPath = $this->getAbsolutePath($uploadDirectory, $originName);
@@ -304,6 +298,16 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     }
 
     #[Override]
+    public function addAbsolutePath(UploadedFile $uploadedFile): UploadedFile
+    {
+        $uploadedFile->setAbsolutePath(
+            $this->getAbsolutePath($uploadedFile->getUploadRelativePath(), $uploadedFile->getOrigin())
+        );
+
+        return $uploadedFile;
+    }
+
+    #[Override]
     public function hydrateFileWithAbsolutePath(UploadedFile $uploadedFile): string
     {
         $absolutePath = $this->getAbsolutePath($uploadedFile->getUploadRelativePath(), $uploadedFile->getOrigin());
@@ -330,9 +334,9 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     }
 
     #[Override]
-    public function addAdditionalInfosToDirectoryFiles(&$data): array
+    public static function hasGrantedAccess(UploadedFile $uploadedFile, $user): bool
     {
-        return $data;
+        return true;
     }
 
     #[Override]
@@ -342,8 +346,8 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     }
 
     #[Override]
-    public static function hasGrantedAccess(UploadedFile $uploadedFile, $user): bool
+    public function addAdditionalInfosToDirectoryFiles(array &$data): array
     {
-        return true;
+        return $data;
     }
 }

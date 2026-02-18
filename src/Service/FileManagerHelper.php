@@ -8,11 +8,11 @@ use Override;
 
 class FileManagerHelper implements FileManagerHelperInterface
 {
-    public function __construct(protected $origins)
+    public function __construct(protected mixed $origins)
     {
     }
 
-    public function completeEntryPoints($entryPoints = []): array
+    public function completeEntryPoints(mixed $entryPoints = []): array
     {
         $completeEntryPoints = [];
         foreach ($entryPoints as $entryPoint) {
@@ -31,7 +31,7 @@ class FileManagerHelper implements FileManagerHelperInterface
     }
 
     #[Override]
-    public function completeConfig($baseConfig = []): array
+    public function completeConfig(mixed $baseConfig = []): array
     {
         $completeEntryPoints = $this->completeEntryPoints($baseConfig['entryPoints']);
 

@@ -6,5 +6,5 @@ namespace Pentatrion\UploadBundle\Service;
 
 interface FileManagerHelperInterface
 {
-    public function completeConfig($baseConfig = []): array;
+    public function completeConfig(mixed $baseConfig = []): array;
 }

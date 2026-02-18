@@ -52,7 +52,7 @@ class UploadController extends AbstractController implements ServiceSubscriberIn
     }
 
     #[Route(path: '/file-manager-endpoint/media-show-file', name: 'file_manager_endpoint_media_show_file')]
-    public function showFile($mode, $origin, $uploadRelativePath): BinaryFileResponse
+    public function showFile(mixed $mode, mixed $origin, mixed $uploadRelativePath): BinaryFileResponse
     {
         $uploadedFile = $this->uploadedFileHelper->getUploadedFile($uploadRelativePath, $origin);
         $absolutePath = $this->uploadedFileHelper->getAbsolutePath($uploadRelativePath, $origin);

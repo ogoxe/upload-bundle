@@ -11,7 +11,7 @@ class ExtendedZip extends ZipArchive
 {
 
     // Member function to add a whole file system subtree to the archive
-    public function addTree(string $dirname, $localName = ''): void
+    public function addTree(string $dirname, ?string $localName = ''): void
     {
         if ($localName) {
             $this->addEmptyDir($localName);
@@ -48,7 +48,7 @@ class ExtendedZip extends ZipArchive
 
     // Helper function
     // Attention, plante si aucun fichier.
-    public static function zipTree(string $dirname, $zipFilename, $flags = 0, $localName = ''): void
+    public static function zipTree(string $dirname, string $zipFilename, ?int $flags = 0, ?string $localName = ''): void
     {
         $zip = new self();
         $zip->open($zipFilename, $flags);
@@ -57,7 +57,7 @@ class ExtendedZip extends ZipArchive
     }
 
 
-    public static function createArchiveFromFiles($files): string
+    public static function createArchiveFromFiles(array $files): string
     {
         /** @var UploadedFile $firstFile */
         $firstFile = $files[0];
