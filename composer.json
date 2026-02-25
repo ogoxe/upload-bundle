@@ -1,6 +1,6 @@
 {
     "name": "pentatrion/upload-bundle",
-    "description": "Upload Helper and File Manager for your Symfony App",
+    "description": "Fork from pentatrion/upload-bundle. Upload Helper and File Manager for your Symfony App",
     "keywords": [
         "bundle",
         "symfony",
@@ -13,6 +13,10 @@
         {
             "name": "Hugues Tavernier",
             "email": "hugues.tavernier@protonmail.com"
+        },
+        {
+            "name": "Narivony Randria",
+            "email": "nrandria@ogoxe.com"
         }
     ],
     "suggest": {
@@ -26,17 +30,17 @@
         "ext-zip": "*",
         "imagine/imagine": "^1.0",
         "liip/imagine-bundle": "^2.6",
-        "symfony/mime": "^4.4 || ^5.0 || ^6.0",
-        "symfony/config": "^4.4 || ^5.0 || ^6.0",
-        "symfony/dependency-injection": "^4.4 || ^5.0 || ^6.0",
-        "symfony/http-kernel": "^4.4 || ^5.0 || ^6.0",
-        "symfony/framework-bundle": "^4.4 || ^5.0 || ^6.0",
-        "symfony/security-bundle": "^4.4 || ^5.0 || ^6.0",
-        "symfony/serializer": "^4.4 || ^5.0 || ^6.0",
-        "symfony/twig-bundle": "^4.4 || ^5.0 || ^6.0",
-        "symfony/validator": "^4.4 || ^5.0 || ^6.0",
-        "symfony/form": "^4.4 || ^5.0 || ^6.0",
-        "symfony/finder": "^4.4 || ^5.0 || ^6.0",
+        "symfony/mime": "^4.4 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/config": "^4.4 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/dependency-injection": "^4.4 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/http-kernel": "^4.4 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/framework-bundle": "^4.4 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/security-bundle": "^4.4 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/serializer": "^4.4 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/twig-bundle": "^4.4 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/validator": "^4.4 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/form": "^4.4 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/finder": "^4.4 || ^5.0 || ^6.0 || ^7.0",
         "symfony/orm-pack": "^2.7"
     },
     "require-dev": {
