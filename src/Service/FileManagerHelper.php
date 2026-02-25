@@ -8,7 +8,7 @@ use Override;
 
 class FileManagerHelper implements FileManagerHelperInterface
 {
-    public function __construct(protected mixed $origins)
+    public function __construct(protected mixed $uploadOrigins)
     {
     }
 
@@ -23,7 +23,7 @@ class FileManagerHelper implements FileManagerHelperInterface
                 'readOnly' => false,
                 'icon' => 'famfm-folder',
                 'label' => 'Répertoire principal',
-                'webPrefix' => $this->origins[$originName]['web_prefix'] ?? null,
+                'webPrefix' => $this->uploadOrigins[$originName]['web_prefix'] ?? null,
             ], $entryPoint);
         }
 
