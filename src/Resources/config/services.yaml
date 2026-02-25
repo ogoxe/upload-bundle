@@ -80,5 +80,8 @@ services:
     tags: ["controller.service_arguments"]
     arguments:
       $uploadedFileHelper: '@Pentatrion\UploadBundle\Service\UploadedFileHelperInterface'
+      $logger: '@Psr\Log\LoggerInterface'
+      $normalizer: '@Symfony\Component\Serializer\Normalizer\NormalizerInterface'
+      $fileHelper: '@Pentatrion\UploadBundle\Service\FileHelper'
     calls:
       - [setContainer, ["@service_container"]]
