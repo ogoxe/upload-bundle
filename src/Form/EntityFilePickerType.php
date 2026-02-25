@@ -18,10 +18,15 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class EntityFilePickerType extends AbstractType
 {
+    private string $locale;
+
     public function __construct(
         private readonly FileManagerHelperInterface $fileManagerHelper,
+        private readonly RequestStack $requestStack,
         private readonly NormalizerInterface $normalizer
-    ) {}
+    ) {
+        $this->locale = substr($requestStack->getCurrentRequest()->getLocale(), 0, 2);
+    }
 
     #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void

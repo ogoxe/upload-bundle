@@ -45,13 +45,13 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         ];
     }
 
-    public function __construct(protected mixed $origins, protected ContainerInterface $container, protected mixed $defaultOriginName, protected mixed $liipFilters)
+    public function __construct(protected mixed $uploadOrigins, protected ContainerInterface $container, protected mixed $defaultOriginName, protected mixed $liipFilters)
     {
     }
 
     public function isOriginPublic(mixed $originName): bool
     {
-        return isset($this->origins[$originName]['web_prefix']);
+        return isset($this->uploadOrigins[$originName]['web_prefix']);
     }
 
     #[Override]
@@ -70,7 +70,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
         $originName ??= $this->defaultOriginName;
         $suffix = '' !== $relativePath ? '/'.$relativePath : '';
 
-        return $this->origins[$originName]['path'].$suffix;
+        return $this->uploadOrigins[$originName]['path'].$suffix;
     }
 
     // renvoie un chemin web absolu si le fichier est public.
@@ -84,7 +84,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     {
         $originName ??= $this->defaultOriginName;
 
-        if (!isset($this->origins[$originName]['web_prefix'])) {
+        if (!isset($this->uploadOrigins[$originName]['web_prefix'])) {
             return $this->container->get('router')->generate('file_manager_endpoint_media_show_file', [
                 'mode' => 'show',
                 'origin' => $originName,
@@ -92,7 +92,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
             ]);
         }
 
-        return $this->origins[$originName]['web_prefix'].'/'.$uploadRelativePath;
+        return $this->uploadOrigins[$originName]['web_prefix'].'/'.$uploadRelativePath;
     }
 
     #[Override]
@@ -100,7 +100,7 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
     {
         $originName ??= $this->defaultOriginName;
 
-        return $this->origins[$originName]['liip_path'].'/'.$uploadRelativePath;
+        return $this->uploadOrigins[$originName]['liip_path'].'/'.$uploadRelativePath;
     }
 
     // renvoie un identifiant pour liipImagine.
@@ -119,10 +119,10 @@ class UploadedFileHelper implements UploadedFileHelperInterface, ServiceSubscrib
 
         $uploadRelativePath = substr(
             $file->getPathname(),
-            strlen((string) $this->origins[$originName]['path']) + 1,
+            strlen((string) $this->uploadOrigins[$originName]['path']) + 1,
         );
 
-        return $this->origins[$originName]['liip_path'].'/'.$uploadRelativePath;
+        return $this->uploadOrigins[$originName]['liip_path'].'/'.$uploadRelativePath;
     }
 
     #[Override]
