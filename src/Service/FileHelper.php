@@ -1,13 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\Service;
 
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use Imagine\Image\Point;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Override;
 use Pentatrion\UploadBundle\Exception\InformativeException;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\File\File;
@@ -16,43 +21,43 @@ use Symfony\Component\Validator\Constraints\File as FileConstraint;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Service\ServiceSubscriberInterface;
+use function file_get_contents;
+use function filesize;
+use function fopen;
+use function fwrite;
 
 class FileHelper implements ServiceSubscriberInterface
 {
-    private $container;
-    private $uploadedFileHelper;
-    private $publicUploadsOrigin;
-    private $liipCacheDir;
+    private mixed $publicUploadsOrigin;
+    private readonly string $liipCacheDir;
 
     public function __construct(
-        $uploadOrigins,
-        $webRootDir,
-        UploadedFileHelperInterface $uploadedFileHelper,
-        ContainerInterface $container
+        mixed $uploadOrigins,
+        string $webRootDir,
+        private readonly UploadedFileHelperInterface $uploadedFileHelper,
+        private readonly ContainerInterface $container
     ) {
-        $this->container = $container;
-        $this->uploadedFileHelper = $uploadedFileHelper;
         $this->publicUploadsOrigin = $uploadOrigins['public_uploads'];
         $this->liipCacheDir = $webRootDir.'/media';
     }
 
-    public function purgeUploadsDirectory()
+    public function purgeUploadsDirectory(): void
     {
         $finder = new Finder();
-        $fs = new Filesystem();
+        $filesystem = new Filesystem();
 
         $finder->in($this->publicUploadsOrigin['path'])->depth('== 0');
         foreach ($finder as $file) {
-            $fs->remove($file);
+            $filesystem->remove($file);
         }
 
         $finder->in($this->liipCacheDir)->depth('== 0');
         foreach ($finder as $file) {
-            $fs->remove($file);
+            $filesystem->remove($file);
         }
     }
 
-    public function sanitizeFilename($filename, $dir, $options = []): ?string
+    public function sanitizeFilename(string $filename, string $dir, array $options = []): ?string
     {
         if (isset($options['prefix'])) {
             $filename = $options['prefix'].$filename;
@@ -69,22 +74,27 @@ class FileHelper implements ServiceSubscriberInterface
         if (isset($options['urlize']) && $options['urlize']) {
             $filenameWithoutExtension = Urlizer::urlize($filenameWithoutExtension);
         }
+
         if (isset($options['unique']) && $options['unique']) {
             $filenameWithoutExtension = $filenameWithoutExtension.'-'.uniqid();
-        } else {
-            if (file_exists($dir.DIRECTORY_SEPARATOR.$filenameWithoutExtension.'.'.$extension)) {
-                $counter = 1;
-                while (file_exists($dir.DIRECTORY_SEPARATOR.$filenameWithoutExtension.'-'.$counter.'.'.$extension)) {
-                    ++$counter;
-                }
-                $filenameWithoutExtension = $filenameWithoutExtension.'-'.$counter;
+        } elseif (file_exists($dir.DIRECTORY_SEPARATOR.$filenameWithoutExtension.'.'.$extension)) {
+            $counter = 1;
+            while (file_exists($dir.DIRECTORY_SEPARATOR.$filenameWithoutExtension.'-'.$counter.'.'.$extension)) {
+                ++$counter;
             }
+
+            $filenameWithoutExtension = $filenameWithoutExtension.'-'.$counter;
         }
 
         return $filenameWithoutExtension.'.'.$extension;
     }
 
     // validation pour le file manager
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function validateFile(File $file = null): array
     {
         if (!$file instanceof File) {
@@ -136,9 +146,9 @@ class FileHelper implements ServiceSubscriberInterface
     }
 
     // les droits seront fixés
-    // pour un admin  http:http 644
+    // pour un admin http:http 644
     // pour un client http:http 664
-    public function uploadFile(File $file, $destRelDir, $originName = null, $options = [])
+    public function uploadFile(File $file, ?string $destRelDir, ?string $originName = null, array $options = []): ?\Pentatrion\UploadBundle\Entity\UploadedFile
     {
         $destAbsDir = $this->uploadedFileHelper->getAbsolutePath($destRelDir, $originName);
 
@@ -149,67 +159,75 @@ class FileHelper implements ServiceSubscriberInterface
                 $extension = $file->guessExtension();
                 $options['extension'] = $extension;
             }
+
             if ($file instanceof UploadedFile) {
                 $filename = $file->getClientOriginalName();
             } else {
                 $filename = $file->getFilename();
             }
+
             $newFilename = $this->sanitizeFilename($filename, $destAbsDir, array_merge($options, ['urlize' => true]));
         }
 
-        $fs = new Filesystem();
-        if (!$fs->exists($destAbsDir)) {
-            $fs->mkdir($destAbsDir);
+        $filesystem = new Filesystem();
+        if (!$filesystem->exists($destAbsDir)) {
+            $filesystem->mkdir($destAbsDir);
         }
+
         $file->move($destAbsDir, $newFilename);
 
         return $this->uploadedFileHelper->getUploadedFile(($destRelDir ? $destRelDir.DIRECTORY_SEPARATOR : '').$newFilename, $originName);
     }
 
-    public function createFileFromChunks($tempDir, $filename, $totalSize, $totalChunks, $destRelDir, $originName = null, $options = [])
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function createFileFromChunks(string $tempDir, string $filename, mixed $totalSize, mixed $totalChunks, ?string $destRelDir, ?string $originName = null, $options = []): false|\Pentatrion\UploadBundle\Entity\UploadedFile|null
     {
-        $fs = new Filesystem();
+        $filesystem = new Filesystem();
         $totalFilesOnServerSize = 0;
         $files = array_diff(scandir($tempDir), ['..', '.', 'output', 'done']);
 
         $destAbsDir = $this->uploadedFileHelper->getAbsolutePath($destRelDir, $originName);
         $newFilename = $this->sanitizeFilename($filename, $destAbsDir, array_merge($options, ['urlize' => true]));
 
-        // si on reprend un upload au milieu des test on parviendra à générer le fichier, il faut donc que
+        // si on reprend un upload au milieu des tests, on parviendra à générer le fichier, il faut donc que
         // les tests suivants renvoient tout de suite les bonnes infos.
-        if ($fs->exists($destAbsDir.DIRECTORY_SEPARATOR.$newFilename)) {
+        if ($filesystem->exists($destAbsDir.DIRECTORY_SEPARATOR.$newFilename)) {
             return $this->uploadedFileHelper->getUploadedFile(($destRelDir ? $destRelDir.DIRECTORY_SEPARATOR : '').$newFilename, $originName);
         }
 
         foreach ($files as $file) {
-            $tempFileSize = \filesize($tempDir.DIRECTORY_SEPARATOR.$file);
+            $tempFileSize = filesize($tempDir.DIRECTORY_SEPARATOR.$file);
             $totalFilesOnServerSize += $tempFileSize;
         }
 
         if ($totalFilesOnServerSize >= $totalSize) {
-            if (($fp = \fopen($tempDir.DIRECTORY_SEPARATOR.'output', 'w')) !== false) {
+            if (($fp = fopen($tempDir.DIRECTORY_SEPARATOR.'output', 'w')) !== false) {
                 for ($i = 1; $i <= $totalChunks; ++$i) {
-                    \fwrite($fp, \file_get_contents($tempDir.DIRECTORY_SEPARATOR.'chunk.part'.$i));
+                    fwrite($fp, file_get_contents($tempDir.DIRECTORY_SEPARATOR.'chunk.part'.$i));
                 }
+
                 fclose($fp);
             }
 
-            if (!$fs->exists($destAbsDir)) {
-                $fs->mkdir($destAbsDir);
+            if (!$filesystem->exists($destAbsDir)) {
+                $filesystem->mkdir($destAbsDir);
             }
 
             $file = new File($tempDir.DIRECTORY_SEPARATOR.'output');
 
             $violations = $this->validateFile($file);
-            if (count($violations) > 0) {
-                throw new InformativeException(implode('\n', $violations), 415);
+            if ($violations !== []) {
+                throw new InformativeException(415, implode('\n', $violations));
             }
 
             $file->move($destAbsDir, $newFilename);
 
             // permet de supprimer récursivement sans problème avec les chunks concurrents
-            $fs->rename($tempDir, $tempDir.'_done');
-            $fs->remove($tempDir.'_done');
+            $filesystem->rename($tempDir, $tempDir.'_done');
+            $filesystem->remove($tempDir.'_done');
 
             return $this->uploadedFileHelper->getUploadedFile(($destRelDir ? $destRelDir.DIRECTORY_SEPARATOR : '').$newFilename, $originName);
         } else {
@@ -217,22 +235,26 @@ class FileHelper implements ServiceSubscriberInterface
         }
     }
 
-    public function uploadChunkFile(File $file, $destDir, $filename): File
+    public function uploadChunkFile(File $file, iterable|string $destDir, ?string $filename): File
     {
-        $fs = new Filesystem();
-        if (!$fs->exists($destDir)) {
-            $fs->mkdir($destDir);
+        $filesystem = new Filesystem();
+        if (!$filesystem->exists($destDir)) {
+            $filesystem->mkdir($destDir);
         }
 
         return $file->move($destDir, $filename);
     }
 
-    public function delete(string $uploadRelativePath, $originName = null): void
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function delete(string $uploadRelativePath, ?string $originName = null): void
     {
         $absolutePath = $this->uploadedFileHelper->getAbsolutePath($uploadRelativePath, $originName);
 
-        $fs = new Filesystem();
-        $fs->remove($absolutePath);
+        $filesystem = new Filesystem();
+        $filesystem->remove($absolutePath);
 
         if ($this->container->has('cachemanager')) {
             $liipPath = $this->uploadedFileHelper->getLiipPath($uploadRelativePath, $originName);
@@ -240,15 +262,20 @@ class FileHelper implements ServiceSubscriberInterface
         }
     }
 
-    public function deleteDir(string $uploadRelativeDir, $originName = null): void
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function deleteDir(string $uploadRelativeDir, ?string $originName = null): void
     {
         $absoluteDir = $this->uploadedFileHelper->getAbsolutePath($uploadRelativeDir, $originName);
 
         $finder = new Finder();
-        $fs = new Filesystem();
+        $filesystem = new Filesystem();
         if (!file_exists($absoluteDir)) {
             return;
         }
+
         $finder->in($absoluteDir)->depth('== 0');
         foreach ($finder as $file) {
             if ($this->container->has('cachemanager')) {
@@ -256,16 +283,31 @@ class FileHelper implements ServiceSubscriberInterface
                 $this->container->get('cachemanager')->remove($liipPath);
             }
 
-            $fs->remove($file);
+            $filesystem->remove($file);
         }
-        $fs->remove($absoluteDir);
+
+        $filesystem->remove($absoluteDir);
     }
 
-    public function cropImage(string $uploadRelativePath, $origin, $x, $y, $width, $height, $finalWidth, $finalHeight, $angle = 0): bool
-    {
-        if (!class_exists("Imagine\Gd\Imagine")) {
-            throw new InformativeException('Unable to crop image. Did you install Imagine ? composer require imagine/imagine', 401);
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function cropImage(
+        string $uploadRelativePath,
+        ?string $origin,
+        int|float $x,
+        int|float $y,
+        int|float $width,
+        int|float $height,
+        int|float $finalWidth,
+        int|float $finalHeight,
+        int|float $angle = 0
+    ): bool {
+        if (!class_exists(Imagine::class)) {
+            throw new InformativeException(401, 'Unable to crop image. Did you install Imagine ? composer require imagine/imagine');
         }
+
         $absolutePath = $this->uploadedFileHelper->getAbsolutePath($uploadRelativePath, $origin);
         $imagine = new Imagine();
         $image = $imagine->open($absolutePath);
@@ -273,9 +315,11 @@ class FileHelper implements ServiceSubscriberInterface
         if (0 !== $angle) {
             $image->rotate($angle);
         }
+
         if ($width >= 1 && $height >= 1) {
             $image->crop(new Point($x, $y), new Box($width, $height));
         }
+
         if ($finalWidth >= 1 && $finalHeight >= 1) {
             $image->resize(new Box($finalWidth, $finalHeight));
         }
@@ -290,6 +334,7 @@ class FileHelper implements ServiceSubscriberInterface
         return true;
     }
 
+    #[Override]
     public static function getSubscribedServices(): array
     {
         return [

@@ -1,0 +1,27 @@
+# see https://github.com/phpstan/phpstan/blob/master/README.md
+parameters:
+    level: 6
+    paths:
+        - src
+ #   doctrine:
+ #       objectManagerLoader: tests/object-manager.php
+
+ #   symfony:
+ #       containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+ #       constant_hassers: false
+ #       console_application_loader: tests/console-application.php
+
+ #   excludes_analyse:
+ #       - tests/bootstrap.php
+ #       - tests/console-application.php
+ #       - tests/object-manager.php
+
+ #   bootstrapFiles:
+ #       - vendor/autoload.php
+
+#    autoload_directories:
+#        - src/Migrations
+
+#    ignoreErrors:
+#        - '#^Property Gedmo\\Translatable\\Entity\\MappedSuperclass\\AbstractPersonalTranslation::\$id \(int\) does not accept int\|null\.$#'
+#        - '#^Property App\\Entity\\(?:.+)::\$createdAt \(DateTime\) does not accept DateTime\|false\.$#'

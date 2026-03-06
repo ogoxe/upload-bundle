@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\Service;
 
 use Pentatrion\UploadBundle\Entity\UploadedFile;
@@ -7,25 +9,25 @@ use SplFileInfo;
 
 interface UploadedFileHelperInterface
 {
-    public function getAbsolutePath(string $uploadRelativePath, string $origin = null): string;
+    public function getAbsolutePath(mixed $uploadRelativePath, mixed $originName = null): string;
 
-    public function getWebPath(string $uploadRelativePath, string $origin = null): string;
+    public function getWebPath(mixed $uploadRelativePath, mixed $originName = null): string;
 
-    public function getLiipPath(string $uploadRelativePath, string $origin = null): string;
+    public function getLiipPath(?string $uploadRelativePath, mixed $originName = null): string;
 
-    public function getLiipId(string $uploadRelativePath, string $originName = null): string;
+    public function getLiipId(mixed $uploadRelativePath, mixed $originName = null): string;
 
-    public function getLiipPathFromFile(SplFileInfo $file, string $originName = null);
+    public function getLiipPathFromFile(SplFileInfo $file, mixed $originName = null);
 
-    public function parseLiipId($liipId): array;
+    public function parseLiipId(string $liipId): array;
 
-    public function getUrlThumbnail(string $id, string $filter, array $runtimeConfig = [], $suffix = null);
+    public function getUrlThumbnail(mixed $liipPath, mixed $filter, array $runtimeConfig = [], mixed $suffix = null);
 
-    public function getUploadedFile($uploadRelativePath, $originName = null): ?UploadedFile;
+    public function getUploadedFile(mixed $uploadRelativePath, mixed $originName = null): ?UploadedFile;
 
-    public function getUploadedFileByLiipId(string $fileId): UploadedFile;
+    public function getUploadedFileByLiipId(string $liipId): UploadedFile;
 
-    public function getUploadedFilesFromDirectory(string $directorySuffix, string $origin, string $mimeGroup = null, bool $withDirectoryInfos = false): array;
+    public function getUploadedFilesFromDirectory(mixed $uploadDirectory, mixed $originName, mixed $mimeGroup = null, bool $withDirectoryInfos = false): array;
 
     public function addAbsolutePath(UploadedFile $uploadedFile): UploadedFile;
 
@@ -37,5 +39,5 @@ interface UploadedFileHelperInterface
 
     public function addAdditionalInfos(&$infos);
 
-    public function addAdditionalInfosToDirectoryFiles(&$data);
+    public function addAdditionalInfosToDirectoryFiles(array &$data);
 }

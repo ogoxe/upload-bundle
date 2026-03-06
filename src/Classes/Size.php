@@ -1,20 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\Classes;
 
 class Size
 {
-    public static function getHumanSize($size): string
+    public static function getHumanSize(float|int $size): string
     {
-        if (!$size) {
+        if ($size <= 0) {
             return '';
         }
-        $sz = ' KMGTP';
-        $factor = floor((strlen($size) - 1) / 3);
-        if (0 == $factor) {
-            return sprintf('%.0f octets', $size);
-        }
 
-        return sprintf('%.1f ', $size / pow(1024, $factor)).@$sz[$factor].'o';
+        $units = ['octets', 'Ko', 'Mo', 'Go', 'To', 'Po'];
+        $factor = (int) floor(log($size, 1024));
+
+        return sprintf('%.1f %s', $size / 1024 ** $factor, $units[$factor]);
     }
 }

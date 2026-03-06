@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the `liip/LiipImagineBundle` project.
  *
@@ -8,35 +10,33 @@
  * For the full copyright and license information, please view the LICENSE.md
  * file that was distributed with this source code.
  */
-
 namespace Pentatrion\UploadBundle\Service;
 
-use Liip\ImagineBundle\Binary\BinaryInterface;
-use Liip\ImagineBundle\Imagine\Cache\Helper\PathHelper;
 use Liip\ImagineBundle\Imagine\Cache\Resolver\ResolverInterface;
 use Liip\ImagineBundle\Imagine\Cache\Resolver\WebPathResolver;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Routing\RequestContext;
+use Override;
 
 class AbsoluteWebPathResolver extends WebPathResolver implements ResolverInterface
 {
     /**
      * {@inheritdoc}
      */
+    #[Override]
     public function resolve($path, $filter): string
     {
         return sprintf(
             '/%s',
-            ltrim($this->getFileUrl($path, $filter), '/')
+            ltrim((string) $this->getFileUrl($path, $filter), '/')
         );
     }
 
-    public function getFilePath($path, $filter)
+    #[Override]
+    protected function getFilePath($path, $filter): string
     {
         return $this->webRoot . '/' . $this->getFullPath($path, $filter);
     }
 
-    private function getFullPath($path, $filter)
+    private function getFullPath(array|string $path, string $filter): string
     {
         // crude way of sanitizing URL scheme ("protocol") part
         $path = str_replace('://', '---', $path);

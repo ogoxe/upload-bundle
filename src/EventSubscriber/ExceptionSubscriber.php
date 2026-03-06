@@ -1,38 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\EventSubscriber;
 
+use Override;
 use Pentatrion\UploadBundle\Exception\InformativeException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 
-class ExceptionSubscriber implements EventSubscriberInterface
+readonly class ExceptionSubscriber implements EventSubscriberInterface
 {
-    private $logger;
-
-    public function __construct(LoggerInterface $logger)
+    public function __construct(private LoggerInterface $logger)
     {
-        $this->logger = $logger;
     }
 
-    public function onKernelException(ExceptionEvent $event)
+    public function onKernelException(ExceptionEvent $exceptionEvent): void
     {
-        $exception = $event->getThrowable();
+        $throwable = $exceptionEvent->getThrowable();
 
-        if (!$exception instanceof InformativeException) {
+        if (!$throwable instanceof InformativeException) {
             return;
         }
 
-        $this->logger->notice($exception->getMessage());
-        $response = new JsonResponse([
-            'title' => $exception->getMessage(),
-            'status' => $exception->getStatusCode()
+        $this->logger->notice($throwable->getMessage());
+        $jsonResponse = new JsonResponse([
+            'title' => $throwable->getMessage(),
+            'status' => $throwable->getStatusCode()
         ]);
-        $event->setResponse($response);
+        $exceptionEvent->setResponse($jsonResponse);
     }
 
+    #[Override]
     public static function getSubscribedEvents(): array
     {
         return [

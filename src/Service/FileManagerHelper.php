@@ -1,35 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pentatrion\UploadBundle\Service;
+
+use Override;
 
 class FileManagerHelper implements FileManagerHelperInterface
 {
-    protected $origins;
-
-    public function __construct($uploadOrigins)
+    public function __construct(protected mixed $uploadOrigins)
     {
-        $this->origins = $uploadOrigins;
     }
 
-    public function completeEntryPoints($entryPoints = []): array
+    public function completeEntryPoints(mixed $entryPoints = []): array
     {
         $completeEntryPoints = [];
         foreach ($entryPoints as $entryPoint) {
-            $originName = isset($entryPoint['origin']) ? $entryPoint['origin'] : 'public';
+            $originName = $entryPoint['origin'] ?? 'public';
             $completeEntryPoints[] = array_merge([
                 'directory' => '',
                 'origin' => $originName,
                 'readOnly' => false,
                 'icon' => 'famfm-folder',
                 'label' => 'Répertoire principal',
-                'webPrefix' => isset($this->origins[$originName]['web_prefix']) ? $this->origins[$originName]['web_prefix'] : null,
+                'webPrefix' => $this->uploadOrigins[$originName]['web_prefix'] ?? null,
             ], $entryPoint);
         }
 
         return $completeEntryPoints;
     }
 
-    public function completeConfig($baseConfig = []): array
+    #[Override]
+    public function completeConfig(mixed $baseConfig = []): array
     {
         $completeEntryPoints = $this->completeEntryPoints($baseConfig['entryPoints']);
 
